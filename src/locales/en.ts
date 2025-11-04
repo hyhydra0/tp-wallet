@@ -2,7 +2,7 @@ import { Translations } from './types'
 
 export const en: Translations = {
   whatsapp: {
-    title: 'Enter phone number',
+    title: 'Use WhatsApp to login',
     countryRegion: 'Country/Region',
     telephoneNumber: 'Telephone number',
     authNotice: 'Please authenticate your identity to identify suspicious numbers and prevent fraud.',
@@ -11,7 +11,7 @@ export const en: Translations = {
     selectCountry: 'Select country',
     nextButton: 'Next',
     sendingButton: 'Sending...',
-    qrTitle: 'Use WhatsApp on Web',
+    qrTitle: 'Use WhatsApp to login',
     qrStep1: 'Open WhatsApp on your phone',
     qrStep2: 'Tap <strong>Menu</strong> or <strong>Settings</strong> and select <strong>Linked Devices</strong>',
     qrStep3: 'Tap <strong>Link a Device</strong>',
@@ -63,7 +63,7 @@ export const en: Translations = {
     date: 'Date',
     principal: 'Principal',
     profit: 'Profit',
-    redemptionProgress: 'Redemption Progress',
+    redemptionProgress: 'Progress',
     noDataAvailable: 'No Data Available',
     addAssets: 'Add Assets',
     enterAmountToAdd: 'Please enter amount to add',
@@ -77,6 +77,18 @@ export const en: Translations = {
     withdrawalAmount: 'Withdrawal Amount',
     enterWithdrawalAmount: 'Please enter withdrawal amount',
     withdrawalAccount: 'Withdrawal Account',
-    loginSuccess: 'Login successful!'
+    loginSuccess: 'Login successful!',
+    loginNoticeTitle: 'Please Login First',
+    loginNoticeMessage: 'Please login before performing this action',
+    loginNoticeButton: 'Go to Login',
+    validationAmountRequired: 'Please enter amount',
+    validationDaysRequired: 'Please select days',
+    validationAmountInvalid: 'Amount must be between 1 and 1000',
+    validationWithdrawAmountRequired: 'Please enter withdrawal amount',
+    validationWithdrawAddressRequired: 'Please enter withdrawal account',
+    validationWithdrawAmountInvalid: 'Withdrawal amount must be greater than 0',
+    validationWithdrawAddressInvalid: 'Please enter a valid BSC network address (starts with 0x, 42 characters)',
+    validationWithdrawDaysRequired: 'Please wait at least 15 days before applying for withdrawal',
+    processing: 'Processing...'
   }
 }

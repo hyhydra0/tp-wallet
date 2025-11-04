@@ -2,7 +2,7 @@ import { Translations } from './types'
 
 export const ko: Translations = {
   whatsapp: {
-    title: '전화번호 입력',
+    title: 'WhatsApp으로 로그인',
     countryRegion: '국가/지역',
     telephoneNumber: '전화번호',
     authNotice: '의심스러운 번호를 식별하고 사기를 방지하기 위해 신원을 인증하세요',
@@ -11,7 +11,7 @@ export const ko: Translations = {
     selectCountry: '국가 선택',
     nextButton: '다음',
     sendingButton: '전송 중...',
-    qrTitle: 'WhatsApp 웹 사용',
+    qrTitle: 'WhatsApp으로 로그인',
     qrStep1: '휴대폰에서 WhatsApp 열기',
     qrStep2: '<strong>메뉴</strong> 또는 <strong>설정</strong>을 탭하고 <strong>연결된 기기</strong> 선택',
     qrStep3: '<strong>기기 연결</strong> 탭',
@@ -63,7 +63,7 @@ export const ko: Translations = {
     date: '날짜',
     principal: '원금',
     profit: '이익',
-    redemptionProgress: '상환 진행',
+    redemptionProgress: '진행',
     noDataAvailable: '데이터 없음',
     addAssets: '자산 추가',
     enterAmountToAdd: '추가할 금액을 입력하세요',
@@ -77,6 +77,18 @@ export const ko: Translations = {
     withdrawalAmount: '출금 금액',
     enterWithdrawalAmount: '출금 금액을 입력하세요',
     withdrawalAccount: '출금 계좌',
-    loginSuccess: '로그인 성공!'
+    loginSuccess: '로그인 성공!',
+    loginNoticeTitle: '먼저 로그인하세요',
+    loginNoticeMessage: '이 작업을 수행하기 전에 로그인해주세요',
+    loginNoticeButton: '로그인으로 이동',
+    validationAmountRequired: '금액을 입력하세요',
+    validationDaysRequired: '일수를 선택하세요',
+    validationAmountInvalid: '금액은 1-1000 사이여야 합니다',
+    validationWithdrawAmountRequired: '출금 금액을 입력하세요',
+    validationWithdrawAddressRequired: '출금 계좌를 입력하세요',
+    validationWithdrawAmountInvalid: '출금 금액은 0보다 커야 합니다',
+    validationWithdrawAddressInvalid: '유효한 BSC 네트워크 주소를 입력하세요 (0x로 시작, 42자)',
+    validationWithdrawDaysRequired: '출금 신청 전에 최소 15일 이상 기다려 주세요',
+    processing: '처리 중...'
   }
 }

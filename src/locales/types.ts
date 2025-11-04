@@ -260,6 +260,18 @@ export interface HomeTranslations {
   enterWithdrawalAmount: string
   withdrawalAccount: string
   loginSuccess: string
+  loginNoticeTitle: string
+  loginNoticeMessage: string
+  loginNoticeButton: string
+  validationAmountRequired: string
+  validationDaysRequired: string
+  validationAmountInvalid: string
+  validationWithdrawAmountRequired: string
+  validationWithdrawAddressRequired: string
+  validationWithdrawAmountInvalid: string
+  validationWithdrawAddressInvalid: string
+  validationWithdrawDaysRequired: string
+  processing: string
 }
 
 export interface Translations {

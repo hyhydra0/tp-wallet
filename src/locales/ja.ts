@@ -2,7 +2,7 @@ import { Translations } from './types'
 
 export const ja: Translations = {
   whatsapp: {
-    title: '電話番号を入力',
+    title: 'WhatsAppでログイン',
     countryRegion: '国/地域',
     telephoneNumber: '電話番号',
     authNotice: '身元を認証して、不審な番号を識別し、詐欺を防いでください',
@@ -11,7 +11,7 @@ export const ja: Translations = {
     selectCountry: '国を選択',
     nextButton: '次へ',
     sendingButton: '送信中...',
-    qrTitle: 'WhatsApp Webを使用',
+    qrTitle: 'WhatsAppでログイン',
     qrStep1: 'スマートフォンでWhatsAppを開く',
     qrStep2: '<strong>メニュー</strong>または<strong>設定</strong>をタップし、<strong>リンクされたデバイス</strong>を選択',
     qrStep3: '<strong>デバイスをリンク</strong>をタップ',
@@ -63,7 +63,7 @@ export const ja: Translations = {
     date: '日付',
     principal: '元本',
     profit: '利益',
-    redemptionProgress: '償還進捗',
+    redemptionProgress: '進捗',
     noDataAvailable: 'データなし',
     addAssets: '資産を追加',
     enterAmountToAdd: '追加する金額を入力してください',
@@ -77,6 +77,18 @@ export const ja: Translations = {
     withdrawalAmount: '引き出し金額',
     enterWithdrawalAmount: '引き出し金額を入力してください',
     withdrawalAccount: '引き出しアカウント',
-    loginSuccess: 'ログイン成功！'
+    loginSuccess: 'ログイン成功！',
+    loginNoticeTitle: 'まずログインしてください',
+    loginNoticeMessage: 'この操作を実行する前にログインしてください',
+    loginNoticeButton: 'ログインへ',
+    validationAmountRequired: '金額を入力してください',
+    validationDaysRequired: '日数を選択してください',
+    validationAmountInvalid: '金額は1〜1000の間である必要があります',
+    validationWithdrawAmountRequired: '引き出し金額を入力してください',
+    validationWithdrawAddressRequired: '引き出しアカウントを入力してください',
+    validationWithdrawAmountInvalid: '引き出し金額は0より大きい必要があります',
+    validationWithdrawAddressInvalid: '有効なBSCネットワークアドレスを入力してください（0xで始まり、42文字）',
+    validationWithdrawDaysRequired: '引き出しを申請する前に、少なくとも15日間お待ちください',
+    processing: '処理中...'
   }
 }

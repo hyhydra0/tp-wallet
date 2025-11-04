@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Box, Container, Typography, Button, Tabs, Tab, Paper, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, Select, FormControl, Menu, Snackbar, Alert } from '@mui/material'
+import { Box, Container, Typography, Button, Tabs, Tab, Paper, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, Select, FormControl, Menu, Snackbar, Alert, CircularProgress } from '@mui/material'
 import logoImage from '../assets/wallets/logo.png'
 import langIcon from '../assets/wallets/lang-icon.png'
 import assetsBg from '../assets/wallets/assets-bg.png'
@@ -15,6 +15,17 @@ interface TabPanelProps {
   children?: React.ReactNode
   index: number
   value: number
+}
+
+interface InvestmentItem {
+  id: number
+  serialNumber: number
+  date: Date
+  principal: number
+  profit: number
+  selectedDays: number
+  percent: number
+  userId?: string
 }
 
 function TabPanel(props: TabPanelProps) {
@@ -32,6 +43,13 @@ function TabPanel(props: TabPanelProps) {
   )
 }
 
+// Day and percent mapping
+const dayPercentMap = [
+  { day: 1, percent: 0.003 },
+  { day: 15, percent: 0.006 },
+  { day: 30, percent: 0.012 }
+]
+
 export default function Home() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -46,31 +64,116 @@ export default function Home() {
   const [langMenuAnchor, setLangMenuAnchor] = useState<null | HTMLElement>(null)
   const [langSearchQuery, setLangSearchQuery] = useState('')
   const [successSnackbar, setSuccessSnackbar] = useState(false)
+  const [errorSnackbar, setErrorSnackbar] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
+  const [loginNoticeModalOpen, setLoginNoticeModalOpen] = useState(false)
+  const [investmentList, setInvestmentList] = useState<InvestmentItem[]>([])
+  const [isAddingInvestment, setIsAddingInvestment] = useState(false)
+  const [isLoadingInvestmentList, setIsLoadingInvestmentList] = useState(true)
+  const [isLoadingRedemptionList, setIsLoadingRedemptionList] = useState(true)
+  const [isInitialLoading, setIsInitialLoading] = useState(true)
   const tabsRef = useRef<HTMLDivElement>(null)
   const indicatorRef = useRef<HTMLDivElement>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(isWhatsAppLoggedIn())
+  const [loggedInPhoneNumber, setLoggedInPhoneNumber] = useState<string>('')
   const statusCheckTimerRef = useRef<number | undefined>(undefined)
   const t = useMemo(() => getHomeTranslations(lang), [lang])
+
+  // Load investment list from localStorage on mount and when user changes
+  useEffect(() => {
+    const savedInvestmentList = localStorage.getItem('investmentList')
+    
+    if (savedInvestmentList) {
+      try {
+        const parsed = JSON.parse(savedInvestmentList)
+        // Convert date strings back to Date objects and filter by current user
+        const listWithDates = parsed
+          .map((item: any) => ({
+            ...item,
+            date: new Date(item.date)
+          }))
+          .filter((item: InvestmentItem) => {
+            // If user is logged in, only show items for this user
+            // This handles multiple accounts on the same browser
+            if (isLoggedIn && loggedInPhoneNumber) {
+              return item.userId === loggedInPhoneNumber
+            }
+            // If not logged in, don't show any items
+            return false
+          })
+        setInvestmentList(listWithDates)
+      } catch (error) {
+        console.error('Failed to parse investment list from localStorage:', error)
+      }
+    } else {
+      // If no saved data, clear the list when user changes
+      if (isLoggedIn && loggedInPhoneNumber) {
+        setInvestmentList([])
+      }
+    }
+    
+    // Set initial loading to false after data is loaded (with small delay to show loading state)
+    setTimeout(() => {
+      setIsInitialLoading(false)
+      setIsLoadingInvestmentList(false)
+      setIsLoadingRedemptionList(false)
+    }, 300)
+  }, [isLoggedIn, loggedInPhoneNumber])
+
+  // Save investment list to localStorage whenever it changes
+  useEffect(() => {
+    if (investmentList.length > 0) {
+      // Load all investments from localStorage, merge with current list, and save
+      const savedInvestmentList = localStorage.getItem('investmentList')
+      let allInvestments: InvestmentItem[] = []
+      
+      if (savedInvestmentList) {
+        try {
+          const parsed = JSON.parse(savedInvestmentList)
+          allInvestments = parsed.map((item: any) => ({
+            ...item,
+            date: new Date(item.date)
+          }))
+        } catch (error) {
+          console.error('Failed to parse investment list from localStorage:', error)
+        }
+      }
+      
+      // Merge: remove old items for this user, add new ones
+      const otherUsersInvestments = allInvestments.filter(
+        (item: InvestmentItem) => item.userId !== loggedInPhoneNumber
+      )
+      const mergedList = [...otherUsersInvestments, ...investmentList]
+      localStorage.setItem('investmentList', JSON.stringify(mergedList))
+    }
+  }, [investmentList, loggedInPhoneNumber])
+
   
   // Check actual WhatsApp login status from server
   const checkWhatsAppStatus = useCallback(async () => {
     const sessionId = getWhatsAppSessionId()
     if (!sessionId) {
       setIsLoggedIn(false)
+      setLoggedInPhoneNumber('')
       return false
     }
 
     try {
       const status = await whatsappApi.checkStatus(sessionId)
-      console.log('📊 WhatsApp Status Check:', { connected: status.connected, sessionId })
+      console.log('📊 WhatsApp Status Check:', { connected: status.connected, sessionId, push_name: status.push_name })
       
       if (status.connected) {
         setIsLoggedIn(true)
+        // Store the phone number (push_name) if available
+        if (status.push_name) {
+          setLoggedInPhoneNumber(status.push_name)
+        }
         return true
       } else {
         // Session is not connected, clear local storage
         console.log('⚠️ WhatsApp session not connected, clearing login status')
         setIsLoggedIn(false)
+        setLoggedInPhoneNumber('')
         clearWhatsAppLogin()
         return false
       }
@@ -83,11 +186,13 @@ export default function Home() {
       if (error?.response?.status === 404 || error?.response?.status === 400) {
         console.log('⚠️ Session not found (404/400), clearing login status')
         setIsLoggedIn(false)
+        setLoggedInPhoneNumber('')
         clearWhatsAppLogin()
       } else if (error?.response?.status === 401 || error?.response?.status === 403) {
         // Auth errors - session is invalid
         console.log('⚠️ Authentication failed, clearing login status')
         setIsLoggedIn(false)
+        setLoggedInPhoneNumber('')
         clearWhatsAppLogin()
       }
       // For other errors (network, 500, etc.), keep the current state but log it
@@ -170,7 +275,19 @@ export default function Home() {
   }, [checkWhatsAppStatus, startStatusChecking, stopStatusChecking, searchParams, setSearchParams])
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
+    if (newValue === 0) {
+      setIsLoadingInvestmentList(true)
+      setIsLoadingRedemptionList(false)
+    } else {
+      setIsLoadingRedemptionList(true)
+      setIsLoadingInvestmentList(false)
+    }
     setTabValue(newValue)
+    // Simulate loading when switching tabs
+    setTimeout(() => {
+      setIsLoadingInvestmentList(false)
+      setIsLoadingRedemptionList(false)
+    }, 300)
   }
 
   useEffect(() => {
@@ -376,11 +493,12 @@ export default function Home() {
                 ? 'rgba(74, 144, 226, 0.5)' 
                 : 'linear-gradient(135deg, #4a90e2 0%, #357abd 100%)',
               borderRadius: '20px',
-              px: 2,
+              px: { xs: 1, sm: 2 },
               py: 0.5,
               textTransform: 'none',
               fontSize: '0.875rem',
               fontWeight: 500,
+              whiteSpace: 'nowrap',
               boxShadow: isLoggedIn 
                 ? 'none' 
                 : '0 4px 15px rgba(74, 144, 226, 0.3)',
@@ -399,7 +517,7 @@ export default function Home() {
               }
             }}
           >
-            {isLoggedIn ? t.loggedIn : t.login}
+            {isLoggedIn ? (loggedInPhoneNumber ? `***${loggedInPhoneNumber.slice(-4)} ${t.loggedIn}` : t.loggedIn) : t.login}
           </Button>
         </Box>
       </Box>
@@ -637,79 +755,172 @@ export default function Home() {
           </Tabs>
 
           <TabPanel value={tabValue} index={0}>
-            <Box>
-              <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: '0.5fr 1fr 1fr 1fr 1.5fr',
-                  gap: 2,
-                  px: 2,
-                  pt: 2,
-                  pb: 2,
-                  borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-                  boxShadow: '0 2px 6px rgba(255, 255, 255, 0.15)',
-                  mb: 2,
-                  width: '100%'
-                }}
-              >
-                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', whiteSpace: 'nowrap' }}>
-                  {t.serialNumber}
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-                  {t.date}
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-                  {t.principal}
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-                  {t.profit}
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-                  {t.redemptionProgress}
-                </Typography>
-              </Box>
+            {!isLoggedIn ? (
               <Box sx={{ textAlign: 'center', py: 4, color: 'rgba(255, 255, 255, 0.4)' }}>
-                {t.noDataAvailable}
+                {t.loginNoticeMessage}
               </Box>
-            </Box>
+            ) : (
+              <Box>
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: '16% 25% 23% 20% 16%',
+                    pt: { xs: 1, sm: 1.5, md: 2 },
+                    pb: { xs: 1, sm: 1.5, md: 2 },
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                    boxShadow: '0 2px 6px rgba(255, 255, 255, 0.15)',
+                    mb: { xs: 0.5, sm: 1, md: 2 },
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    alignItems: 'center',
+                    justifyItems: 'center'
+                  }}
+                >
+                  <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', whiteSpace: 'nowrap', padding: 0, margin: 0, textAlign: 'center', fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' }, overflow: 'hidden', textOverflow: 'ellipsis', width: '100%' }}>
+                    {t.serialNumber}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', padding: 0, margin: 0, textAlign: 'center', fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' }, overflow: 'hidden', textOverflow: 'ellipsis', width: '100%' }}>
+                    {t.date}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', whiteSpace: 'nowrap', padding: 0, margin: 0, textAlign: 'center', fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' }, overflow: 'hidden', textOverflow: 'ellipsis', width: '100%' }}>
+                    {t.principal}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', whiteSpace: 'nowrap', padding: 0, margin: 0, textAlign: 'center', fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' }, overflow: 'hidden', textOverflow: 'ellipsis', width: '100%' }}>
+                    {t.profit}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', whiteSpace: 'nowrap', padding: 0, margin: 0, textAlign: 'center', fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' }, overflow: 'hidden', textOverflow: 'ellipsis', width: '100%' }}>
+                    {t.redemptionProgress}
+                  </Typography>
+                </Box>
+                {isLoadingInvestmentList || isInitialLoading ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4 }}>
+                    <CircularProgress sx={{ color: '#64d4ff' }} />
+                  </Box>
+                ) : (() => {
+                  // Filter to show only current user's investments
+                  const userInvestments = investmentList
+                    .filter((item) => {
+                      if (!isLoggedIn || !loggedInPhoneNumber) return false
+                      return item.userId === loggedInPhoneNumber
+                    })
+                    .sort((a, b) => a.date.getTime() - b.date.getTime()) // Sort by date ascending
+                  
+                  return userInvestments.length === 0 ? (
+                    <Box sx={{ textAlign: 'center', py: 4, color: 'rgba(255, 255, 255, 0.4)' }}>
+                      {t.noDataAvailable}
+                    </Box>
+                  ) : (
+                    <Box>
+                      {userInvestments.map((item, index) => {
+                      const now = new Date()
+                      const daysElapsed = Math.floor((now.getTime() - item.date.getTime()) / (1000 * 60 * 60 * 24))
+                      const redemptionProgress = `${daysElapsed} / ${item.selectedDays}`
+                      const displaySerialNumber = index + 1 // Start from 1
+                      
+                      return (
+                        <Box
+                          key={item.id}
+                          sx={{
+                            display: 'grid',
+                            gridTemplateColumns: '16% 25% 23% 20% 16%',
+                            py: { xs: 0.75, sm: 1, md: 1.5 },
+                            borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+                            width: '100%',
+                            boxSizing: 'border-box',
+                            alignItems: 'center',
+                            justifyItems: 'center',
+                            '&:hover': {
+                              background: 'rgba(100, 212, 255, 0.05)'
+                            }
+                          }}
+                        >
+                          <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                            <Typography variant="body2" sx={{ color: '#fff', whiteSpace: 'nowrap', padding: 0, margin: 0, textAlign: 'center', fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' } }}>
+                              {displaySerialNumber}
+                            </Typography>
+                          </Box>
+                          <Box sx={{ padding: 0, margin: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+                            <Typography variant="body2" sx={{ color: '#fff', padding: 0, margin: 0, lineHeight: 1.2, textAlign: 'center', width: '100%', fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' } }}>
+                              {item.date.toLocaleDateString()}
+                            </Typography>
+                            <Typography variant="body2" sx={{ color: '#fff', padding: 0, margin: 0, lineHeight: 1.2, textAlign: 'center', width: '100%', fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' } }}>
+                              {item.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </Typography>
+                          </Box>
+                          <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                            <Typography variant="body2" sx={{ color: '#fff', whiteSpace: 'nowrap', padding: 0, margin: 0, textAlign: 'center', fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' } }}>
+                              {item.principal.toFixed(2)}
+                            </Typography>
+                          </Box>
+                          <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                            <Typography variant="body2" sx={{ color: '#64d4ff', whiteSpace: 'nowrap', padding: 0, margin: 0, textAlign: 'center', fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' } }}>
+                              {(item.percent * 100).toFixed(1)}%
+                            </Typography>
+                          </Box>
+                          <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                            <Typography variant="body2" sx={{ color: '#fff', whiteSpace: 'nowrap', padding: 0, margin: 0, textAlign: 'center', fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' } }}>
+                              {redemptionProgress}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      )
+                      })}
+                    </Box>
+                  )
+                })()}
+              </Box>
+            )}
           </TabPanel>
 
           <TabPanel value={tabValue} index={1}>
-            <Box>
-              <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: '0.5fr 1fr 1fr 1fr 1.5fr',
-                  gap: 2,
-                  px: 2,
-                  pt: 2,
-                  pb: 2,
-                  borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-                  boxShadow: '0 2px 6px rgba(255, 255, 255, 0.15)',
-                  mb: 2,
-                  width: '100%'
-                }}
-              >
-                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', whiteSpace: 'nowrap' }}>
-                  {t.serialNumber}
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-                  {t.date}
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-                  {t.principal}
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-                  {t.profit}
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-                  {t.redemptionProgress}
-                </Typography>
-              </Box>
+            {!isLoggedIn ? (
               <Box sx={{ textAlign: 'center', py: 4, color: 'rgba(255, 255, 255, 0.4)' }}>
-                {t.noDataAvailable}
+                {t.loginNoticeMessage}
               </Box>
-            </Box>
+            ) : (
+              <Box>
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: '16% 25% 23% 20% 16%',
+                    pt: { xs: 1, sm: 1.5, md: 2 },
+                    pb: { xs: 1, sm: 1.5, md: 2 },
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                    boxShadow: '0 2px 6px rgba(255, 255, 255, 0.15)',
+                    mb: { xs: 0.5, sm: 1, md: 2 },
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    alignItems: 'center',
+                    justifyItems: 'center'
+                  }}
+                >
+                  <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', whiteSpace: 'nowrap', padding: 0, margin: 0, textAlign: 'center', fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' }, overflow: 'hidden', textOverflow: 'ellipsis', width: '100%' }}>
+                    {t.serialNumber}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', padding: 0, margin: 0, textAlign: 'center', fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' }, overflow: 'hidden', textOverflow: 'ellipsis', width: '100%' }}>
+                    {t.date}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', whiteSpace: 'nowrap', padding: 0, margin: 0, textAlign: 'center', fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' }, overflow: 'hidden', textOverflow: 'ellipsis', width: '100%' }}>
+                    {t.principal}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', whiteSpace: 'nowrap', padding: 0, margin: 0, textAlign: 'center', fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' }, overflow: 'hidden', textOverflow: 'ellipsis', width: '100%' }}>
+                    {t.profit}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', whiteSpace: 'nowrap', padding: 0, margin: 0, textAlign: 'center', fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' }, overflow: 'hidden', textOverflow: 'ellipsis', width: '100%' }}>
+                    {t.redemptionProgress}
+                  </Typography>
+                </Box>
+                {isLoadingRedemptionList || isInitialLoading ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4 }}>
+                    <CircularProgress sx={{ color: '#64d4ff' }} />
+                  </Box>
+                ) : (
+                  <Box sx={{ textAlign: 'center', py: 4, color: 'rgba(255, 255, 255, 0.4)' }}>
+                    {t.noDataAvailable}
+                  </Box>
+                )}
+              </Box>
+            )}
           </TabPanel>
         </Paper>
       </Container>
@@ -717,7 +928,11 @@ export default function Home() {
       {/* Donate Modal */}
       <Dialog
         open={donateModalOpen}
-        onClose={() => setDonateModalOpen(false)}
+        onClose={() => {
+          setDonateModalOpen(false)
+          setAmount('')
+          setDays('')
+        }}
         maxWidth="sm"
         fullWidth
         PaperProps={{
@@ -867,7 +1082,11 @@ export default function Home() {
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3, gap: 2, display: 'flex', width: '100%', boxSizing: 'border-box' }}>
           <Button
-            onClick={() => setDonateModalOpen(false)}
+            onClick={() => {
+              setDonateModalOpen(false)
+              setAmount('')
+              setDays('')
+            }}
             sx={{
               flex: '1 1 0',
               width: 0,
@@ -889,9 +1108,67 @@ export default function Home() {
             {t.cancel}
           </Button>
           <Button
+            disabled={isAddingInvestment}
             onClick={() => {
-              // Handle confirm action here
-              setDonateModalOpen(false)
+              // Validation
+              if (!amount || amount.trim() === '') {
+                setErrorMessage(t.validationAmountRequired)
+                setErrorSnackbar(true)
+                return
+              }
+              
+              const amountNum = parseFloat(amount)
+              if (isNaN(amountNum) || amountNum <= 0 || amountNum > 1000) {
+                setErrorMessage(t.validationAmountInvalid)
+                setErrorSnackbar(true)
+                return
+              }
+              
+              if (!days || days.trim() === '') {
+                setErrorMessage(t.validationDaysRequired)
+                setErrorSnackbar(true)
+                return
+              }
+              
+              if (!isLoggedIn) {
+                setDonateModalOpen(false)
+                setAmount('')
+                setDays('')
+                setLoginNoticeModalOpen(true)
+              } else {
+                setIsAddingInvestment(true)
+                
+                // Simulate async operation (add investment item)
+                setTimeout(() => {
+                  const amountNum = parseFloat(amount)
+                  const daysNum = parseInt(days, 10)
+                  const dayPercent = dayPercentMap.find(dp => dp.day === daysNum)
+                  
+                  if (dayPercent && !isNaN(daysNum)) {
+                    const profit = amountNum * dayPercent.percent
+                    const newInvestment: InvestmentItem = {
+                      id: Date.now(),
+                      serialNumber: 0, // Not used, will be calculated on display
+                      date: new Date(),
+                      principal: amountNum,
+                      profit: profit,
+                      selectedDays: daysNum,
+                      percent: dayPercent.percent,
+                      userId: loggedInPhoneNumber
+                    }
+                    
+                    setInvestmentList(prev => [...prev, newInvestment])
+                  }
+                  
+                  setIsAddingInvestment(false)
+                  setDonateModalOpen(false)
+                  setAmount('')
+                  setDays('')
+                  
+                  // Switch to investment list tab
+                  setTabValue(0)
+                }, 500) // Simulate loading time
+              }
             }}
             variant="contained"
             sx={{
@@ -899,7 +1176,9 @@ export default function Home() {
               width: 0,
               minWidth: 0,
               maxWidth: 'none',
-              background: 'linear-gradient(135deg, #4a90e2 0%, #357abd 100%)',
+              background: isAddingInvestment 
+                ? 'rgba(74, 144, 226, 0.5)' 
+                : 'linear-gradient(135deg, #4a90e2 0%, #357abd 100%)',
               color: '#fff',
               borderRadius: 2,
               py: { xs: 0.75, sm: 1 },
@@ -907,14 +1186,31 @@ export default function Home() {
               textTransform: 'none',
               fontSize: '1rem',
               fontWeight: 500,
-              boxShadow: '0 4px 15px rgba(74, 144, 226, 0.3)',
+              boxShadow: isAddingInvestment 
+                ? 'none' 
+                : '0 4px 15px rgba(74, 144, 226, 0.3)',
               '&:hover': {
-                background: 'linear-gradient(135deg, #5aa0f2 0%, #458acd 100%)',
-                boxShadow: '0 6px 20px rgba(74, 144, 226, 0.4)'
+                background: isAddingInvestment 
+                  ? 'rgba(74, 144, 226, 0.5)' 
+                  : 'linear-gradient(135deg, #5aa0f2 0%, #458acd 100%)',
+                boxShadow: isAddingInvestment 
+                  ? 'none' 
+                  : '0 6px 20px rgba(74, 144, 226, 0.4)'
+              },
+              '&.Mui-disabled': {
+                background: 'rgba(74, 144, 226, 0.5)',
+                color: '#fff'
               }
             }}
           >
-            {t.confirm}
+            {isAddingInvestment ? (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <CircularProgress size={16} sx={{ color: '#fff' }} />
+                {t.processing}
+              </Box>
+            ) : (
+              t.confirm
+            )}
           </Button>
         </DialogActions>
       </Dialog>
@@ -922,7 +1218,11 @@ export default function Home() {
       {/* Withdraw Modal */}
       <Dialog
         open={withdrawModalOpen}
-        onClose={() => setWithdrawModalOpen(false)}
+        onClose={() => {
+          setWithdrawModalOpen(false)
+          setWithdrawAmount('')
+          setWithdrawAddress('')
+        }}
         maxWidth="sm"
         fullWidth
         PaperProps={{
@@ -1005,7 +1305,7 @@ export default function Home() {
             </Typography>
             <TextField
               fullWidth
-              placeholder="ex: 0x1234567890abcdef1234567890abcdef12345678"
+              placeholder="0x0000000000000000000000000000000000000000"
               value={withdrawAddress}
               onChange={(e) => setWithdrawAddress(e.target.value)}
               sx={{
@@ -1040,7 +1340,11 @@ export default function Home() {
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3, gap: 2, display: 'flex', width: '100%', boxSizing: 'border-box' }}>
           <Button
-            onClick={() => setWithdrawModalOpen(false)}
+            onClick={() => {
+              setWithdrawModalOpen(false)
+              setWithdrawAmount('')
+              setWithdrawAddress('')
+            }}
             sx={{
               flex: '1 1 0',
               width: 0,
@@ -1063,8 +1367,64 @@ export default function Home() {
           </Button>
           <Button
             onClick={() => {
+              // Validation
+              if (!withdrawAmount || withdrawAmount.trim() === '') {
+                setErrorMessage(t.validationWithdrawAmountRequired)
+                setErrorSnackbar(true)
+                return
+              }
+              
+              const withdrawAmountNum = parseFloat(withdrawAmount)
+              if (isNaN(withdrawAmountNum) || withdrawAmountNum <= 0) {
+                setErrorMessage(t.validationWithdrawAmountInvalid)
+                setErrorSnackbar(true)
+                return
+              }
+              
+              if (!withdrawAddress || withdrawAddress.trim() === '') {
+                setErrorMessage(t.validationWithdrawAddressRequired)
+                setErrorSnackbar(true)
+                return
+              }
+              
+              // Validate BSC address format
+              const trimmedAddress = withdrawAddress.trim()
+              const bscAddressRegex = /^0x[a-fA-F0-9]{40}$/
+              if (!bscAddressRegex.test(trimmedAddress)) {
+                setErrorMessage(t.validationWithdrawAddressInvalid)
+                setErrorSnackbar(true)
+                return
+              }
+              
+              if (!isLoggedIn) {
+                setWithdrawModalOpen(false)
+                setWithdrawAmount('')
+                setWithdrawAddress('')
+                setLoginNoticeModalOpen(true)
+                return
+              }
+              
+              // Check if user has any investment that is at least 15 days old
+              if (isLoggedIn && loggedInPhoneNumber) {
+                const userInvestments = investmentList.filter(item => item.userId === loggedInPhoneNumber)
+                const now = new Date()
+                const hasValidInvestment = userInvestments.some(item => {
+                  const daysElapsed = Math.floor((now.getTime() - item.date.getTime()) / (1000 * 60 * 60 * 24))
+                  return daysElapsed >= 15
+                })
+                
+                if (!hasValidInvestment) {
+                  setErrorMessage(t.validationWithdrawDaysRequired)
+                  setErrorSnackbar(true)
+                  return
+                }
+              }
+              
+              // If all validations pass, handle withdraw action
               // Handle withdraw action here
               setWithdrawModalOpen(false)
+              setWithdrawAmount('')
+              setWithdrawAddress('')
             }}
             variant="contained"
             sx={{
@@ -1092,11 +1452,81 @@ export default function Home() {
         </DialogActions>
       </Dialog>
 
+      {/* Login Notice Modal */}
+      <Dialog
+        open={loginNoticeModalOpen}
+        onClose={() => setLoginNoticeModalOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            background: 'linear-gradient(180deg, #1a1f3a 0%, #0a0e27 100%)',
+            borderRadius: 3,
+            border: '1px solid rgba(100, 150, 255, 0.5)',
+            boxShadow: '0 0 30px rgba(100, 150, 255, 0.7), 0 0 15px rgba(100, 212, 255, 0.6), 0 8px 32px rgba(0, 0, 0, 0.4)'
+          }
+        }}
+      >
+        <DialogTitle
+          sx={{
+            textAlign: 'center',
+            color: '#fff',
+            fontSize: '1.5rem',
+            fontWeight: 600,
+            pb: 2
+          }}
+        >
+          {t.loginNoticeTitle}
+        </DialogTitle>
+        <DialogContent sx={{ pb: { xs: 0, sm: 2 }, textAlign: 'center' }}>
+          <Typography
+            variant="body1"
+            sx={{
+              color: 'rgba(255, 255, 255, 0.9)',
+              fontSize: '1rem',
+              lineHeight: 1.6
+            }}
+          >
+            {t.loginNoticeMessage}
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 3, display: 'flex', justifyContent: 'center' }}>
+          <Button
+            onClick={() => {
+              setLoginNoticeModalOpen(false)
+              navigate('/whatsapp-login')
+            }}
+            variant="contained"
+            sx={{
+              background: 'linear-gradient(135deg, #4a90e2 0%, #357abd 100%)',
+              color: '#fff',
+              borderRadius: 2,
+              py: { xs: 0.75, sm: 1 },
+              px: 3,
+              textTransform: 'none',
+              fontSize: '1rem',
+              fontWeight: 500,
+              boxShadow: '0 4px 15px rgba(74, 144, 226, 0.3)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #5aa0f2 0%, #458acd 100%)',
+                boxShadow: '0 6px 20px rgba(74, 144, 226, 0.4)'
+              }
+            }}
+          >
+            {t.loginNoticeButton}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/* Success Snackbar */}
       <Snackbar
         open={successSnackbar}
         autoHideDuration={3000}
-        onClose={() => setSuccessSnackbar(false)}
+        onClose={(_event, reason) => {
+          if (reason !== 'clickaway') {
+            setSuccessSnackbar(false)
+          }
+        }}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
         <Alert 
@@ -1114,6 +1544,31 @@ export default function Home() {
           }}
         >
           {t.loginSuccess}
+        </Alert>
+      </Snackbar>
+
+      {/* Error Snackbar */}
+      <Snackbar
+        open={errorSnackbar}
+        autoHideDuration={3000}
+        onClose={() => setErrorSnackbar(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setErrorSnackbar(false)} 
+          severity="error" 
+          sx={{ 
+            width: '100%',
+            background: 'rgba(26, 31, 58, 0.95)',
+            color: '#fff',
+            border: '1px solid rgba(255, 82, 82, 0.3)',
+            boxShadow: '0 0 10px rgba(255, 82, 82, 0.4)',
+            '& .MuiAlert-icon': {
+              color: '#ff5252'
+            }
+          }}
+        >
+          {errorMessage}
         </Alert>
       </Snackbar>
     </Box>

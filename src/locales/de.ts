@@ -2,7 +2,7 @@ import { Translations } from './types'
 
 export const de: Translations = {
   whatsapp: {
-    title: 'Telefonnummer eingeben',
+    title: 'Verwenden Sie WhatsApp zum Anmelden',
     countryRegion: 'Land/Region',
     telephoneNumber: 'Telefonnummer',
     authNotice: 'Bitte authentifizieren Sie Ihre Identität, um verdächtige Nummern zu identifizieren und Betrug zu verhindern',
@@ -11,7 +11,7 @@ export const de: Translations = {
     selectCountry: 'Land auswählen',
     nextButton: 'Weiter',
     sendingButton: 'Wird gesendet...',
-    qrTitle: 'WhatsApp im Web verwenden',
+    qrTitle: 'Verwenden Sie WhatsApp zum Anmelden',
     qrStep1: 'Öffnen Sie WhatsApp auf Ihrem Telefon',
     qrStep2: 'Tippen Sie auf <strong>Menü</strong> oder <strong>Einstellungen</strong> und wählen Sie <strong>Verknüpfte Geräte</strong>',
     qrStep3: 'Tippen Sie auf <strong>Gerät verknüpfen</strong>',
@@ -63,7 +63,7 @@ export const de: Translations = {
     date: 'Datum',
     principal: 'Kapital',
     profit: 'Gewinn',
-    redemptionProgress: 'Rückzahlungsfortschritt',
+    redemptionProgress: 'Fortschritt',
     noDataAvailable: 'Keine Daten verfügbar',
     addAssets: 'Vermögenswerte hinzufügen',
     enterAmountToAdd: 'Bitte geben Sie den hinzuzufügenden Betrag ein',
@@ -77,6 +77,18 @@ export const de: Translations = {
     withdrawalAmount: 'Auszahlungsbetrag',
     enterWithdrawalAmount: 'Bitte geben Sie den Auszahlungsbetrag ein',
     withdrawalAccount: 'Auszahlungskonto',
-    loginSuccess: 'Anmeldung erfolgreich!'
+    loginSuccess: 'Anmeldung erfolgreich!',
+    loginNoticeTitle: 'Bitte zuerst anmelden',
+    loginNoticeMessage: 'Bitte melden Sie sich an, bevor Sie diese Aktion ausführen',
+    loginNoticeButton: 'Zur Anmeldung',
+    validationAmountRequired: 'Bitte geben Sie den Betrag ein',
+    validationDaysRequired: 'Bitte wählen Sie die Tage',
+    validationAmountInvalid: 'Der Betrag muss zwischen 1 und 1000 liegen',
+    validationWithdrawAmountRequired: 'Bitte geben Sie den Auszahlungsbetrag ein',
+    validationWithdrawAddressRequired: 'Bitte geben Sie das Auszahlungskonto ein',
+    validationWithdrawAmountInvalid: 'Der Auszahlungsbetrag muss größer als 0 sein',
+    validationWithdrawAddressInvalid: 'Bitte geben Sie eine gültige BSC-Netzwerkadresse ein (beginnt mit 0x, 42 Zeichen)',
+    validationWithdrawDaysRequired: 'Bitte warten Sie mindestens 15 Tage, bevor Sie eine Auszahlung beantragen',
+    processing: 'Verarbeitung...'
   }
 }

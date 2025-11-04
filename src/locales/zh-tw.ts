@@ -2,7 +2,7 @@ import { Translations } from './types'
 
 export const zhTw: Translations = {
   whatsapp: {
-    title: '驗證您的電話號碼',
+    title: '使用whatsapp 進行登入',
     countryRegion: '國家/地區',
     telephoneNumber: '電話號碼',
     authNotice: '進行身份驗證，識別可疑號碼，防止詐騙',
@@ -11,7 +11,7 @@ export const zhTw: Translations = {
     selectCountry: '選擇國家',
     nextButton: '下一步',
     sendingButton: '發送中...',
-    qrTitle: '使用 WhatsApp 網頁版',
+    qrTitle: '使用whatsapp 進行登入',
     qrStep1: '在手機上打開 WhatsApp',
     qrStep2: '點按<strong>選單</strong>或<strong>設定</strong>，然後選擇<strong>已連結的裝置</strong>',
     qrStep3: '點按<strong>連結裝置</strong>',
@@ -63,7 +63,7 @@ export const zhTw: Translations = {
     date: '日期',
     principal: '本金',
     profit: '盈利',
-    redemptionProgress: '贖回進展',
+    redemptionProgress: '進展',
     noDataAvailable: '暫無數據',
     addAssets: '增加資產',
     enterAmountToAdd: '請輸入增加金額',
@@ -77,6 +77,18 @@ export const zhTw: Translations = {
     withdrawalAmount: '提款金額',
     enterWithdrawalAmount: '請輸入提款金額',
     withdrawalAccount: '提款帳號',
-    loginSuccess: '登入成功！'
+    loginSuccess: '登入成功！',
+    loginNoticeTitle: '請先登入',
+    loginNoticeMessage: '請先登入後再進行此操作',
+    loginNoticeButton: '前往登入',
+    validationAmountRequired: '請輸入金額',
+    validationDaysRequired: '請選擇天數',
+    validationAmountInvalid: '金額必須在1-1000之間',
+    validationWithdrawAmountRequired: '請輸入提款金額',
+    validationWithdrawAddressRequired: '請輸入提款帳號',
+    validationWithdrawAmountInvalid: '提款金額必須大於0',
+    validationWithdrawAddressInvalid: '請輸入有效的BSC網絡地址（0x開頭，42個字符）',
+    validationWithdrawDaysRequired: '請至少15天後, 再申請提款',
+    processing: '處理中...'
   }
 }
