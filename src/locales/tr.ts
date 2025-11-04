@@ -69,9 +69,9 @@ export const tr: Translations = {
     enterAmountToAdd: 'Eklemek için miktarı girin',
     max: 'Maks: 1000',
     selectDays: 'Günleri seçin',
-    day1: '1 gün, bileşik faiz %0.3',
-    day15: '15 gün, bileşik faiz %0.6',
-    day30: '30 gün, bileşik faiz %1.2',
+    day1: (params: { day: number; percent: string }) => `${params.day} gün, bileşik faiz %${params.percent}`,
+    day15: (params: { day: number; percent: string }) => `${params.day} gün, bileşik faiz %${params.percent}`,
+    day30: (params: { day: number; percent: string }) => `${params.day} gün, bileşik faiz %${params.percent}`,
     cancel: 'İptal',
     confirm: 'Onayla',
     withdrawalAmount: 'Çekme Miktarı',
@@ -87,8 +87,8 @@ export const tr: Translations = {
     validationWithdrawAmountRequired: 'Lütfen çekme miktarını girin',
     validationWithdrawAddressRequired: 'Lütfen çekme hesabını girin',
     validationWithdrawAmountInvalid: 'Çekme miktarı 0\'dan büyük olmalıdır',
-    validationWithdrawAddressInvalid: 'Lütfen geçerli bir BSC ağ adresi girin (0x ile başlar, 42 karakter)',
-    validationWithdrawDaysRequired: 'Lütfen çekme başvurusu yapmadan önce en az 15 gün bekleyin',
+    validationWithdrawAddressInvalid: 'Lütfen geçerli bir TRON ağ adresi girin (T ile başlar, 34 karakter)',
+    validationWithdrawDaysRequired: 'Platform ödülleri doğrudan çekilemez, çekme başvurusu yapmadan önce 7 gün stake yapmanız gerekir',
     processing: 'İşleniyor...'
   }
 }

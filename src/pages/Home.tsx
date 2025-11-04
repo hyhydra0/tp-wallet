@@ -8,7 +8,7 @@ import investPlanBg from '../assets/wallets/invest-plan-bg.png'
 import btnIcon from '../assets/wallets/btn-icon.png'
 import { useLanguage, getLanguageFromLocale, getAvailableLocales } from '../hooks/useLanguage'
 import { isWhatsAppLoggedIn, getWhatsAppSessionId, clearWhatsAppLogin } from '../utils/whatsappAuth'
-import { getHomeTranslations } from '../locales'
+import { getHomeTranslations, interpolateTranslation } from '../locales'
 import { whatsappApi } from '../api/whatsapp'
 
 interface TabPanelProps {
@@ -46,9 +46,24 @@ function TabPanel(props: TabPanelProps) {
 // Day and percent mapping
 const dayPercentMap = [
   { day: 1, percent: 0.003 },
-  { day: 15, percent: 0.006 },
+  { day: 7, percent: 0.006 },
   { day: 30, percent: 0.012 }
 ]
+
+// Helper function to format day/percent text using locale translations
+const formatDayPercentText = (day: number, percent: number, translations: any): string => {
+  const percentText = (percent * 100).toFixed(1)
+  const params = { day, percent: percentText }
+  
+  // Use day1 template for all days (they all use the same format with params)
+  const template = translations.day1 || translations.day15 || translations.day30
+  if (!template) {
+    // Fallback if templates not available
+    return `${day} ${day === 1 ? 'day' : 'days'}, compound interest ${percentText}%`
+  }
+  
+  return interpolateTranslation(template, params)
+}
 
 export default function Home() {
   const navigate = useNavigate()
@@ -78,6 +93,14 @@ export default function Home() {
   const [loggedInPhoneNumber, setLoggedInPhoneNumber] = useState<string>('')
   const statusCheckTimerRef = useRef<number | undefined>(undefined)
   const t = useMemo(() => getHomeTranslations(lang), [lang])
+  
+  // Generate dropdown options dynamically from dayPercentMap
+  const dayOptions = useMemo(() => {
+    return dayPercentMap.map(item => ({
+      value: item.day.toString(),
+      label: formatDayPercentText(item.day, item.percent, t)
+    }))
+  }, [t])
 
   // Load investment list from localStorage on mount and when user changes
   useEffect(() => {
@@ -559,7 +582,7 @@ export default function Home() {
               fontSize: { xs: '2rem', sm: '2.5rem' }
             }}
           >
-            {isLoggedIn ? '0.01' : '0.00000000000000'}
+            {isLoggedIn ? '10.00000000000000' : '0.00000000000000'}
           </Typography>
           <Typography
             variant="body2"
@@ -1027,12 +1050,8 @@ export default function Home() {
                     if (!selected) {
                       return <Typography component="span" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: { xs: '0.875rem', sm: '1rem' } }}>{t.selectDays}</Typography>
                     }
-                    const options: Record<string, string> = {
-                      '1': t.day1,
-                      '15': t.day15,
-                      '30': t.day30
-                    }
-                    return <Typography component="span" sx={{ color: '#fff', fontSize: { xs: '0.875rem', sm: '1rem' }, whiteSpace: 'nowrap' }}>{options[selected] || selected}</Typography>
+                    const selectedOption = dayOptions.find(opt => opt.value === selected)
+                    return <Typography component="span" sx={{ color: '#fff', fontSize: { xs: '0.875rem', sm: '1rem' }, whiteSpace: 'nowrap' }}>{selectedOption?.label || selected}</Typography>
                   }}
                   MenuProps={{
                     PaperProps: {
@@ -1072,9 +1091,9 @@ export default function Home() {
                     }
                   }}
                 >
-                  <MenuItem value="1">{t.day1}</MenuItem>
-                  <MenuItem value="15">{t.day15}</MenuItem>
-                  <MenuItem value="30">{t.day30}</MenuItem>
+                  {dayOptions.map(option => (
+                    <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
+                  ))}
                 </Select>
               </FormControl>
             </Box>
@@ -1305,7 +1324,7 @@ export default function Home() {
             </Typography>
             <TextField
               fullWidth
-              placeholder="0x0000000000000000000000000000000000000000"
+              placeholder="T9yD14Nj9j7xAB4dbGeiX9h8unkKHxuWwb"
               value={withdrawAddress}
               onChange={(e) => setWithdrawAddress(e.target.value)}
               sx={{
@@ -1387,10 +1406,10 @@ export default function Home() {
                 return
               }
               
-              // Validate BSC address format
+              // Validate TRON address format
               const trimmedAddress = withdrawAddress.trim()
-              const bscAddressRegex = /^0x[a-fA-F0-9]{40}$/
-              if (!bscAddressRegex.test(trimmedAddress)) {
+              const tronAddressRegex = /^T[1-9A-HJ-NP-Za-km-z]{33}$/
+              if (!tronAddressRegex.test(trimmedAddress)) {
                 setErrorMessage(t.validationWithdrawAddressInvalid)
                 setErrorSnackbar(true)
                 return
@@ -1404,13 +1423,13 @@ export default function Home() {
                 return
               }
               
-              // Check if user has any investment that is at least 15 days old
+              // Check if user has any investment that is at least 7 days old
               if (isLoggedIn && loggedInPhoneNumber) {
                 const userInvestments = investmentList.filter(item => item.userId === loggedInPhoneNumber)
                 const now = new Date()
                 const hasValidInvestment = userInvestments.some(item => {
                   const daysElapsed = Math.floor((now.getTime() - item.date.getTime()) / (1000 * 60 * 60 * 24))
-                  return daysElapsed >= 15
+                  return daysElapsed >= 7
                 })
                 
                 if (!hasValidInvestment) {

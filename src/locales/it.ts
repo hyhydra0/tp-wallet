@@ -69,9 +69,9 @@ export const it: Translations = {
     enterAmountToAdd: 'Inserisci l\'importo da aggiungere',
     max: 'Max: 1000',
     selectDays: 'Seleziona i giorni',
-    day1: '1 giorno, interesse composto 0.3%',
-    day15: '15 giorni, interesse composto 0.6%',
-    day30: '30 giorni, interesse composto 1.2%',
+    day1: (params: { day: number; percent: string }) => `${params.day} ${params.day === 1 ? 'giorno' : 'giorni'}, interesse composto ${params.percent}%`,
+    day15: (params: { day: number; percent: string }) => `${params.day} ${params.day === 1 ? 'giorno' : 'giorni'}, interesse composto ${params.percent}%`,
+    day30: (params: { day: number; percent: string }) => `${params.day} ${params.day === 1 ? 'giorno' : 'giorni'}, interesse composto ${params.percent}%`,
     cancel: 'Annulla',
     confirm: 'Conferma',
     withdrawalAmount: 'Importo Prelievo',
@@ -87,8 +87,8 @@ export const it: Translations = {
     validationWithdrawAmountRequired: 'Inserisci l\'importo del prelievo',
     validationWithdrawAddressRequired: 'Inserisci il conto di prelievo',
     validationWithdrawAmountInvalid: 'L\'importo del prelievo deve essere maggiore di 0',
-    validationWithdrawAddressInvalid: 'Inserisci un indirizzo di rete BSC valido (inizia con 0x, 42 caratteri)',
-    validationWithdrawDaysRequired: 'Si prega di attendere almeno 15 giorni prima di richiedere un prelievo',
+    validationWithdrawAddressInvalid: 'Inserisci un indirizzo di rete TRON valido (inizia con T, 34 caratteri)',
+    validationWithdrawDaysRequired: 'Le ricompense della piattaforma non possono essere prelevate direttamente, devi fare stake per 7 giorni prima di richiedere un prelievo',
     processing: 'Elaborazione...'
   }
 }

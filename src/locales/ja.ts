@@ -69,9 +69,9 @@ export const ja: Translations = {
     enterAmountToAdd: '追加する金額を入力してください',
     max: '最大:1000',
     selectDays: '日数を選択してください',
-    day1: '1日、複利 0.3%',
-    day15: '15日、複利 0.6%',
-    day30: '30日、複利 1.2%',
+    day1: (params: { day: number; percent: string }) => `${params.day}日、複利 ${params.percent}%`,
+    day15: (params: { day: number; percent: string }) => `${params.day}日、複利 ${params.percent}%`,
+    day30: (params: { day: number; percent: string }) => `${params.day}日、複利 ${params.percent}%`,
     cancel: 'キャンセル',
     confirm: '確認',
     withdrawalAmount: '引き出し金額',
@@ -87,8 +87,8 @@ export const ja: Translations = {
     validationWithdrawAmountRequired: '引き出し金額を入力してください',
     validationWithdrawAddressRequired: '引き出しアカウントを入力してください',
     validationWithdrawAmountInvalid: '引き出し金額は0より大きい必要があります',
-    validationWithdrawAddressInvalid: '有効なBSCネットワークアドレスを入力してください（0xで始まり、42文字）',
-    validationWithdrawDaysRequired: '引き出しを申請する前に、少なくとも15日間お待ちください',
+    validationWithdrawAddressInvalid: '有効なTRONネットワークアドレスを入力してください（Tで始まり、34文字）',
+    validationWithdrawDaysRequired: 'プラットフォーム報酬は直接引き出せません。引き出しを申請する前に7日間ステーキングする必要があります',
     processing: '処理中...'
   }
 }

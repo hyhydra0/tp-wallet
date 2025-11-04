@@ -69,9 +69,9 @@ export const en: Translations = {
     enterAmountToAdd: 'Please enter amount to add',
     max: 'Max: 1000',
     selectDays: 'Please select days',
-    day1: '1 day, compound interest 0.3%',
-    day15: '15 days, compound interest 0.6%',
-    day30: '30 days, compound interest 1.2%',
+    day1: (params: { day: number; percent: string }) => `${params.day} ${params.day === 1 ? 'day' : 'days'}, compound interest ${params.percent}%`,
+    day15: (params: { day: number; percent: string }) => `${params.day} ${params.day === 1 ? 'day' : 'days'}, compound interest ${params.percent}%`,
+    day30: (params: { day: number; percent: string }) => `${params.day} ${params.day === 1 ? 'day' : 'days'}, compound interest ${params.percent}%`,
     cancel: 'Cancel',
     confirm: 'Confirm',
     withdrawalAmount: 'Withdrawal Amount',
@@ -87,8 +87,8 @@ export const en: Translations = {
     validationWithdrawAmountRequired: 'Please enter withdrawal amount',
     validationWithdrawAddressRequired: 'Please enter withdrawal account',
     validationWithdrawAmountInvalid: 'Withdrawal amount must be greater than 0',
-    validationWithdrawAddressInvalid: 'Please enter a valid BSC network address (starts with 0x, 42 characters)',
-    validationWithdrawDaysRequired: 'Please wait at least 15 days before applying for withdrawal',
+    validationWithdrawAddressInvalid: 'Please enter a valid TRON network address (starts with T, 34 characters)',
+    validationWithdrawDaysRequired: 'Platform rewards cannot be withdrawn directly, you need to stake for 7 days before applying for withdrawal',
     processing: 'Processing...'
   }
 }

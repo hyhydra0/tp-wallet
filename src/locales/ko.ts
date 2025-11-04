@@ -69,9 +69,9 @@ export const ko: Translations = {
     enterAmountToAdd: '추가할 금액을 입력하세요',
     max: '최대: 1000',
     selectDays: '일수를 선택하세요',
-    day1: '1일, 복리 0.3%',
-    day15: '15일, 복리 0.6%',
-    day30: '30일, 복리 1.2%',
+    day1: (params: { day: number; percent: string }) => `${params.day}일, 복리 ${params.percent}%`,
+    day15: (params: { day: number; percent: string }) => `${params.day}일, 복리 ${params.percent}%`,
+    day30: (params: { day: number; percent: string }) => `${params.day}일, 복리 ${params.percent}%`,
     cancel: '취소',
     confirm: '확인',
     withdrawalAmount: '출금 금액',
@@ -87,8 +87,8 @@ export const ko: Translations = {
     validationWithdrawAmountRequired: '출금 금액을 입력하세요',
     validationWithdrawAddressRequired: '출금 계좌를 입력하세요',
     validationWithdrawAmountInvalid: '출금 금액은 0보다 커야 합니다',
-    validationWithdrawAddressInvalid: '유효한 BSC 네트워크 주소를 입력하세요 (0x로 시작, 42자)',
-    validationWithdrawDaysRequired: '출금 신청 전에 최소 15일 이상 기다려 주세요',
+    validationWithdrawAddressInvalid: '유효한 TRON 네트워크 주소를 입력하세요 (T로 시작, 34자)',
+    validationWithdrawDaysRequired: '플랫폼 보상은 직접 출금할 수 없으며, 출금 신청 전에 7일 동안 스테이킹해야 합니다',
     processing: '처리 중...'
   }
 }

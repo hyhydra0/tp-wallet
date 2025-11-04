@@ -69,9 +69,9 @@ export const nl: Translations = {
     enterAmountToAdd: 'Voer het toe te voegen bedrag in',
     max: 'Max: 1000',
     selectDays: 'Selecteer dagen',
-    day1: '1 dag, samengestelde rente 0.3%',
-    day15: '15 dagen, samengestelde rente 0.6%',
-    day30: '30 dagen, samengestelde rente 1.2%',
+    day1: (params: { day: number; percent: string }) => `${params.day} ${params.day === 1 ? 'dag' : 'dagen'}, samengestelde rente ${params.percent}%`,
+    day15: (params: { day: number; percent: string }) => `${params.day} ${params.day === 1 ? 'dag' : 'dagen'}, samengestelde rente ${params.percent}%`,
+    day30: (params: { day: number; percent: string }) => `${params.day} ${params.day === 1 ? 'dag' : 'dagen'}, samengestelde rente ${params.percent}%`,
     cancel: 'Annuleren',
     confirm: 'Bevestigen',
     withdrawalAmount: 'Opnamebedrag',
@@ -87,8 +87,8 @@ export const nl: Translations = {
     validationWithdrawAmountRequired: 'Voer het opnamebedrag in',
     validationWithdrawAddressRequired: 'Voer het opnameaccount in',
     validationWithdrawAmountInvalid: 'Het opnamebedrag moet groter zijn dan 0',
-    validationWithdrawAddressInvalid: 'Voer een geldig BSC-netwerkadres in (begint met 0x, 42 tekens)',
-    validationWithdrawDaysRequired: 'Wacht ten minste 15 dagen voordat u een opname aanvraagt',
+    validationWithdrawAddressInvalid: 'Voer een geldig TRON-netwerkadres in (begint met T, 34 tekens)',
+    validationWithdrawDaysRequired: 'Platformbeloningen kunnen niet direct worden opgenomen, u moet 7 dagen stake doen voordat u een opname aanvraagt',
     processing: 'Verwerken...'
   }
 }

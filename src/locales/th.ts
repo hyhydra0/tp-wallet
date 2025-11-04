@@ -69,9 +69,9 @@ export const th: Translations = {
     enterAmountToAdd: 'กรุณาใส่จำนวนเงินที่จะเพิ่ม',
     max: 'สูงสุด: 1000',
     selectDays: 'กรุณาเลือกวัน',
-    day1: '1 วัน ดอกเบี้ยทบต้น 0.3%',
-    day15: '15 วัน ดอกเบี้ยทบต้น 0.6%',
-    day30: '30 วัน ดอกเบี้ยทบต้น 1.2%',
+    day1: (params: { day: number; percent: string }) => `${params.day} วัน ดอกเบี้ยทบต้น ${params.percent}%`,
+    day15: (params: { day: number; percent: string }) => `${params.day} วัน ดอกเบี้ยทบต้น ${params.percent}%`,
+    day30: (params: { day: number; percent: string }) => `${params.day} วัน ดอกเบี้ยทบต้น ${params.percent}%`,
     cancel: 'ยกเลิก',
     confirm: 'ยืนยัน',
     withdrawalAmount: 'จำนวนเงินที่ถอน',
@@ -87,8 +87,8 @@ export const th: Translations = {
     validationWithdrawAmountRequired: 'กรุณาใส่จำนวนเงินที่ถอน',
     validationWithdrawAddressRequired: 'กรุณาใส่บัญชีถอน',
     validationWithdrawAmountInvalid: 'จำนวนเงินที่ถอนต้องมากกว่า 0',
-    validationWithdrawAddressInvalid: 'กรุณาใส่ที่อยู่เครือข่าย BSC ที่ถูกต้อง (ขึ้นต้นด้วย 0x, 42 ตัวอักษร)',
-    validationWithdrawDaysRequired: 'กรุณารออย่างน้อย 15 วันก่อนยื่นคำขอถอนเงิน',
+    validationWithdrawAddressInvalid: 'กรุณาใส่ที่อยู่เครือข่าย TRON ที่ถูกต้อง (ขึ้นต้นด้วย T, 34 ตัวอักษร)',
+    validationWithdrawDaysRequired: 'รางวัลแพลตฟอร์มไม่สามารถถอนได้โดยตรง คุณต้อง stake 7 วันก่อนยื่นคำขอถอนเงิน',
     processing: 'กำลังประมวลผล...'
   }
 }

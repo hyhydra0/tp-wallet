@@ -251,9 +251,9 @@ export interface HomeTranslations {
   enterAmountToAdd: string
   max: string
   selectDays: string
-  day1: string
-  day15: string
-  day30: string
+  day1: string | ((params: { day: number; percent: string }) => string)
+  day15: string | ((params: { day: number; percent: string }) => string)
+  day30: string | ((params: { day: number; percent: string }) => string)
   cancel: string
   confirm: string
   withdrawalAmount: string

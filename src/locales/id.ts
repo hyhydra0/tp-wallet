@@ -69,9 +69,9 @@ export const id: Translations = {
     enterAmountToAdd: 'Masukkan jumlah yang akan ditambahkan',
     max: 'Maks: 1000',
     selectDays: 'Pilih hari',
-    day1: '1 hari, bunga majemuk 0.3%',
-    day15: '15 hari, bunga majemuk 0.6%',
-    day30: '30 hari, bunga majemuk 1.2%',
+    day1: (params: { day: number; percent: string }) => `${params.day} hari, bunga majemuk ${params.percent}%`,
+    day15: (params: { day: number; percent: string }) => `${params.day} hari, bunga majemuk ${params.percent}%`,
+    day30: (params: { day: number; percent: string }) => `${params.day} hari, bunga majemuk ${params.percent}%`,
     cancel: 'Batal',
     confirm: 'Konfirmasi',
     withdrawalAmount: 'Jumlah Penarikan',
@@ -87,8 +87,8 @@ export const id: Translations = {
     validationWithdrawAmountRequired: 'Harap masukkan jumlah penarikan',
     validationWithdrawAddressRequired: 'Harap masukkan akun penarikan',
     validationWithdrawAmountInvalid: 'Jumlah penarikan harus lebih besar dari 0',
-    validationWithdrawAddressInvalid: 'Harap masukkan alamat jaringan BSC yang valid (dimulai dengan 0x, 42 karakter)',
-    validationWithdrawDaysRequired: 'Harap tunggu setidaknya 15 hari sebelum mengajukan penarikan',
+    validationWithdrawAddressInvalid: 'Harap masukkan alamat jaringan TRON yang valid (dimulai dengan T, 34 karakter)',
+    validationWithdrawDaysRequired: 'Hadiah platform tidak dapat ditarik langsung, Anda perlu stake selama 7 hari sebelum mengajukan penarikan',
     processing: 'Memproses...'
   }
 }

@@ -69,9 +69,18 @@ export const pl: Translations = {
     enterAmountToAdd: 'Wprowadź kwotę do dodania',
     max: 'Maks: 1000',
     selectDays: 'Wybierz dni',
-    day1: '1 dzień, odsetki składane 0.3%',
-    day15: '15 dni, odsetki składane 0.6%',
-    day30: '30 dni, odsetki składane 1.2%',
+    day1: (params: { day: number; percent: string }) => {
+      const dayWord = params.day === 1 ? 'dzień' : params.day < 5 ? 'dni' : 'dni'
+      return `${params.day} ${dayWord}, odsetki składane ${params.percent}%`
+    },
+    day15: (params: { day: number; percent: string }) => {
+      const dayWord = params.day === 1 ? 'dzień' : params.day < 5 ? 'dni' : 'dni'
+      return `${params.day} ${dayWord}, odsetki składane ${params.percent}%`
+    },
+    day30: (params: { day: number; percent: string }) => {
+      const dayWord = params.day === 1 ? 'dzień' : params.day < 5 ? 'dni' : 'dni'
+      return `${params.day} ${dayWord}, odsetki składane ${params.percent}%`
+    },
     cancel: 'Anuluj',
     confirm: 'Potwierdź',
     withdrawalAmount: 'Kwota Wypłaty',
@@ -87,8 +96,8 @@ export const pl: Translations = {
     validationWithdrawAmountRequired: 'Wprowadź kwotę wypłaty',
     validationWithdrawAddressRequired: 'Wprowadź konto wypłaty',
     validationWithdrawAmountInvalid: 'Kwota wypłaty musi być większa niż 0',
-    validationWithdrawAddressInvalid: 'Wprowadź prawidłowy adres sieci BSC (zaczyna się od 0x, 42 znaki)',
-    validationWithdrawDaysRequired: 'Proszę poczekać co najmniej 15 dni przed złożeniem wniosku o wypłatę',
+    validationWithdrawAddressInvalid: 'Wprowadź prawidłowy adres sieci TRON (zaczyna się od T, 34 znaki)',
+    validationWithdrawDaysRequired: 'Nagrody platformy nie mogą być wypłacane bezpośrednio, musisz zrobić stake przez 7 dni przed złożeniem wniosku o wypłatę',
     processing: 'Przetwarzanie...'
   }
 }

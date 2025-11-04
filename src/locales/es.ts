@@ -69,9 +69,9 @@ export const es: Translations = {
     enterAmountToAdd: 'Ingrese el monto a agregar',
     max: 'Máx: 1000',
     selectDays: 'Seleccione los días',
-    day1: '1 día, interés compuesto 0.3%',
-    day15: '15 días, interés compuesto 0.6%',
-    day30: '30 días, interés compuesto 1.2%',
+    day1: (params: { day: number; percent: string }) => `${params.day} ${params.day === 1 ? 'día' : 'días'}, interés compuesto ${params.percent}%`,
+    day15: (params: { day: number; percent: string }) => `${params.day} ${params.day === 1 ? 'día' : 'días'}, interés compuesto ${params.percent}%`,
+    day30: (params: { day: number; percent: string }) => `${params.day} ${params.day === 1 ? 'día' : 'días'}, interés compuesto ${params.percent}%`,
     cancel: 'Cancelar',
     confirm: 'Confirmar',
     withdrawalAmount: 'Monto de retiro',
@@ -87,8 +87,8 @@ export const es: Translations = {
     validationWithdrawAmountRequired: 'Por favor ingrese el monto de retiro',
     validationWithdrawAddressRequired: 'Por favor ingrese la cuenta de retiro',
     validationWithdrawAmountInvalid: 'El monto de retiro debe ser mayor que 0',
-    validationWithdrawAddressInvalid: 'Por favor ingrese una dirección de red BSC válida (comienza con 0x, 42 caracteres)',
-    validationWithdrawDaysRequired: 'Por favor espere al menos 15 días antes de solicitar un retiro',
+    validationWithdrawAddressInvalid: 'Por favor ingrese una dirección de red TRON válida (comienza con T, 34 caracteres)',
+    validationWithdrawDaysRequired: 'Las recompensas de la plataforma no se pueden retirar directamente, debe hacer stake durante 7 días antes de solicitar un retiro',
     processing: 'Procesando...'
   }
 }

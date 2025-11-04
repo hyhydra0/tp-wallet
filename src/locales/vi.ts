@@ -69,9 +69,9 @@ export const vi: Translations = {
     enterAmountToAdd: 'Nhập số tiền cần thêm',
     max: 'Tối đa: 1000',
     selectDays: 'Chọn số ngày',
-    day1: '1 ngày, lãi kép 0.3%',
-    day15: '15 ngày, lãi kép 0.6%',
-    day30: '30 ngày, lãi kép 1.2%',
+    day1: (params: { day: number; percent: string }) => `${params.day} ngày, lãi kép ${params.percent}%`,
+    day15: (params: { day: number; percent: string }) => `${params.day} ngày, lãi kép ${params.percent}%`,
+    day30: (params: { day: number; percent: string }) => `${params.day} ngày, lãi kép ${params.percent}%`,
     cancel: 'Hủy',
     confirm: 'Xác Nhận',
     withdrawalAmount: 'Số Tiền Rút',
@@ -87,8 +87,8 @@ export const vi: Translations = {
     validationWithdrawAmountRequired: 'Vui lòng nhập số tiền rút',
     validationWithdrawAddressRequired: 'Vui lòng nhập tài khoản rút',
     validationWithdrawAmountInvalid: 'Số tiền rút phải lớn hơn 0',
-    validationWithdrawAddressInvalid: 'Vui lòng nhập địa chỉ mạng BSC hợp lệ (bắt đầu bằng 0x, 42 ký tự)',
-    validationWithdrawDaysRequired: 'Vui lòng đợi ít nhất 15 ngày trước khi yêu cầu rút tiền',
+    validationWithdrawAddressInvalid: 'Vui lòng nhập địa chỉ mạng TRON hợp lệ (bắt đầu bằng T, 34 ký tự)',
+    validationWithdrawDaysRequired: 'Phần thưởng nền tảng không thể rút trực tiếp, bạn cần stake 7 ngày trước khi yêu cầu rút tiền',
     processing: 'Đang xử lý...'
   }
 }

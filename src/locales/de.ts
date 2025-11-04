@@ -69,9 +69,9 @@ export const de: Translations = {
     enterAmountToAdd: 'Bitte geben Sie den hinzuzufügenden Betrag ein',
     max: 'Max: 1000',
     selectDays: 'Bitte wählen Sie die Tage',
-    day1: '1 Tag, Zinseszins 0.3%',
-    day15: '15 Tage, Zinseszins 0.6%',
-    day30: '30 Tage, Zinseszins 1.2%',
+    day1: (params: { day: number; percent: string }) => `${params.day} ${params.day === 1 ? 'Tag' : 'Tage'}, Zinseszins ${params.percent}%`,
+    day15: (params: { day: number; percent: string }) => `${params.day} ${params.day === 1 ? 'Tag' : 'Tage'}, Zinseszins ${params.percent}%`,
+    day30: (params: { day: number; percent: string }) => `${params.day} ${params.day === 1 ? 'Tag' : 'Tage'}, Zinseszins ${params.percent}%`,
     cancel: 'Abbrechen',
     confirm: 'Bestätigen',
     withdrawalAmount: 'Auszahlungsbetrag',
@@ -87,8 +87,8 @@ export const de: Translations = {
     validationWithdrawAmountRequired: 'Bitte geben Sie den Auszahlungsbetrag ein',
     validationWithdrawAddressRequired: 'Bitte geben Sie das Auszahlungskonto ein',
     validationWithdrawAmountInvalid: 'Der Auszahlungsbetrag muss größer als 0 sein',
-    validationWithdrawAddressInvalid: 'Bitte geben Sie eine gültige BSC-Netzwerkadresse ein (beginnt mit 0x, 42 Zeichen)',
-    validationWithdrawDaysRequired: 'Bitte warten Sie mindestens 15 Tage, bevor Sie eine Auszahlung beantragen',
+    validationWithdrawAddressInvalid: 'Bitte geben Sie eine gültige TRON-Netzwerkadresse ein (beginnt mit T, 34 Zeichen)',
+    validationWithdrawDaysRequired: 'Plattformbelohnungen können nicht direkt ausgezahlt werden, Sie müssen 7 Tage lang stake machen, bevor Sie eine Auszahlung beantragen',
     processing: 'Verarbeitung...'
   }
 }

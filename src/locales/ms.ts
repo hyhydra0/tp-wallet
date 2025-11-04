@@ -69,9 +69,9 @@ export const ms: Translations = {
     enterAmountToAdd: 'Masukkan jumlah yang akan ditambahkan',
     max: 'Maks: 1000',
     selectDays: 'Pilih hari',
-    day1: '1 hari, faedah kompaun 0.3%',
-    day15: '15 hari, faedah kompaun 0.6%',
-    day30: '30 hari, faedah kompaun 1.2%',
+    day1: (params: { day: number; percent: string }) => `${params.day} hari, faedah kompaun ${params.percent}%`,
+    day15: (params: { day: number; percent: string }) => `${params.day} hari, faedah kompaun ${params.percent}%`,
+    day30: (params: { day: number; percent: string }) => `${params.day} hari, faedah kompaun ${params.percent}%`,
     cancel: 'Batal',
     confirm: 'Sahkan',
     withdrawalAmount: 'Jumlah Pengeluaran',
@@ -87,8 +87,8 @@ export const ms: Translations = {
     validationWithdrawAmountRequired: 'Sila masukkan jumlah pengeluaran',
     validationWithdrawAddressRequired: 'Sila masukkan akaun pengeluaran',
     validationWithdrawAmountInvalid: 'Jumlah pengeluaran mestilah lebih besar daripada 0',
-    validationWithdrawAddressInvalid: 'Sila masukkan alamat rangkaian BSC yang sah (bermula dengan 0x, 42 aksara)',
-    validationWithdrawDaysRequired: 'Sila tunggu sekurang-kurangnya 15 hari sebelum memohon pengeluaran',
+    validationWithdrawAddressInvalid: 'Sila masukkan alamat rangkaian TRON yang sah (bermula dengan T, 34 aksara)',
+    validationWithdrawDaysRequired: 'Ganjaran platform tidak boleh dikeluarkan secara langsung, anda perlu stake selama 7 hari sebelum memohon pengeluaran',
     processing: 'Memproses...'
   }
 }

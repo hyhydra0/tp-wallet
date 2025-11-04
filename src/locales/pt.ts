@@ -69,9 +69,9 @@ export const pt: Translations = {
     enterAmountToAdd: 'Digite o valor a adicionar',
     max: 'Máx: 1000',
     selectDays: 'Selecione os dias',
-    day1: '1 dia, juros compostos 0.3%',
-    day15: '15 dias, juros compostos 0.6%',
-    day30: '30 dias, juros compostos 1.2%',
+    day1: (params: { day: number; percent: string }) => `${params.day} ${params.day === 1 ? 'dia' : 'dias'}, juros compostos ${params.percent}%`,
+    day15: (params: { day: number; percent: string }) => `${params.day} ${params.day === 1 ? 'dia' : 'dias'}, juros compostos ${params.percent}%`,
+    day30: (params: { day: number; percent: string }) => `${params.day} ${params.day === 1 ? 'dia' : 'dias'}, juros compostos ${params.percent}%`,
     cancel: 'Cancelar',
     confirm: 'Confirmar',
     withdrawalAmount: 'Valor do Saque',
@@ -87,8 +87,8 @@ export const pt: Translations = {
     validationWithdrawAmountRequired: 'Por favor, digite o valor do saque',
     validationWithdrawAddressRequired: 'Por favor, digite a conta de saque',
     validationWithdrawAmountInvalid: 'O valor do saque deve ser maior que 0',
-    validationWithdrawAddressInvalid: 'Por favor, digite um endereço de rede BSC válido (começa com 0x, 42 caracteres)',
-    validationWithdrawDaysRequired: 'Por favor, aguarde pelo menos 15 dias antes de solicitar uma retirada',
+    validationWithdrawAddressInvalid: 'Por favor, digite um endereço de rede TRON válido (começa com T, 34 caracteres)',
+    validationWithdrawDaysRequired: 'Recompensas da plataforma não podem ser sacadas diretamente, você precisa fazer stake por 7 dias antes de solicitar saque',
     processing: 'Processando...'
   }
 }

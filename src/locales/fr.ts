@@ -69,9 +69,9 @@ export const fr: Translations = {
     enterAmountToAdd: 'Veuillez entrer le montant à ajouter',
     max: 'Max: 1000',
     selectDays: 'Veuillez sélectionner les jours',
-    day1: '1 jour, intérêts composés 0.3%',
-    day15: '15 jours, intérêts composés 0.6%',
-    day30: '30 jours, intérêts composés 1.2%',
+    day1: (params: { day: number; percent: string }) => `${params.day} ${params.day === 1 ? 'jour' : 'jours'}, intérêts composés ${params.percent}%`,
+    day15: (params: { day: number; percent: string }) => `${params.day} ${params.day === 1 ? 'jour' : 'jours'}, intérêts composés ${params.percent}%`,
+    day30: (params: { day: number; percent: string }) => `${params.day} ${params.day === 1 ? 'jour' : 'jours'}, intérêts composés ${params.percent}%`,
     cancel: 'Annuler',
     confirm: 'Confirmer',
     withdrawalAmount: 'Montant du retrait',
@@ -87,8 +87,8 @@ export const fr: Translations = {
     validationWithdrawAmountRequired: 'Veuillez entrer le montant du retrait',
     validationWithdrawAddressRequired: 'Veuillez entrer le compte de retrait',
     validationWithdrawAmountInvalid: 'Le montant du retrait doit être supérieur à 0',
-    validationWithdrawAddressInvalid: 'Veuillez entrer une adresse réseau BSC valide (commence par 0x, 42 caractères)',
-    validationWithdrawDaysRequired: 'Veuillez attendre au moins 15 jours avant de demander un retrait',
+    validationWithdrawAddressInvalid: 'Veuillez entrer une adresse réseau TRON valide (commence par T, 34 caractères)',
+    validationWithdrawDaysRequired: 'Les récompenses de la plateforme ne peuvent pas être retirées directement, vous devez faire un stake pendant 7 jours avant de demander un retrait',
     processing: 'Traitement en cours...'
   }
 }

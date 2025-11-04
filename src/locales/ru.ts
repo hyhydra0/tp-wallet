@@ -69,9 +69,18 @@ export const ru: Translations = {
     enterAmountToAdd: 'Введите сумму для добавления',
     max: 'Макс: 1000',
     selectDays: 'Выберите дни',
-    day1: '1 день, сложные проценты 0.3%',
-    day15: '15 дней, сложные проценты 0.6%',
-    day30: '30 дней, сложные проценты 1.2%',
+    day1: (params: { day: number; percent: string }) => {
+      const dayWord = params.day === 1 ? 'день' : params.day < 5 ? 'дня' : 'дней'
+      return `${params.day} ${dayWord}, сложные проценты ${params.percent}%`
+    },
+    day15: (params: { day: number; percent: string }) => {
+      const dayWord = params.day === 1 ? 'день' : params.day < 5 ? 'дня' : 'дней'
+      return `${params.day} ${dayWord}, сложные проценты ${params.percent}%`
+    },
+    day30: (params: { day: number; percent: string }) => {
+      const dayWord = params.day === 1 ? 'день' : params.day < 5 ? 'дня' : 'дней'
+      return `${params.day} ${dayWord}, сложные проценты ${params.percent}%`
+    },
     cancel: 'Отмена',
     confirm: 'Подтвердить',
     withdrawalAmount: 'Сумма Вывода',
@@ -87,8 +96,8 @@ export const ru: Translations = {
     validationWithdrawAmountRequired: 'Пожалуйста, введите сумму вывода',
     validationWithdrawAddressRequired: 'Пожалуйста, введите счет вывода',
     validationWithdrawAmountInvalid: 'Сумма вывода должна быть больше 0',
-    validationWithdrawAddressInvalid: 'Пожалуйста, введите действительный адрес сети BSC (начинается с 0x, 42 символа)',
-    validationWithdrawDaysRequired: 'Пожалуйста, подождите не менее 15 дней перед подачей заявки на вывод',
+    validationWithdrawAddressInvalid: 'Пожалуйста, введите действительный адрес сети TRON (начинается с T, 34 символа)',
+    validationWithdrawDaysRequired: 'Награды платформы не могут быть выведены напрямую, вам нужно сделать ставку на 7 дней перед подачей заявки на вывод',
     processing: 'Обработка...'
   }
 }

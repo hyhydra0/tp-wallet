@@ -97,6 +97,22 @@ export function getHomeTranslations(lang: Language) {
   return translations.home || locales['en-US'].home
 }
 
+// Helper function to interpolate parameters into translation strings
+export function interpolateTranslation(
+  template: string | ((params: Record<string, string | number>) => string),
+  params: Record<string, string | number>
+): string {
+  if (typeof template === 'function') {
+    return template(params)
+  }
+  
+  let result = template
+  for (const [key, value] of Object.entries(params)) {
+    result = result.replace(new RegExp(`\\{${key}\\}`, 'g'), String(value))
+  }
+  return result
+}
+
 // Re-export detectUserLocale from utils/localization
 export { detectUserLocale } from '../utils/localization'
 

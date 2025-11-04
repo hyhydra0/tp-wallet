@@ -69,9 +69,9 @@ export const ar: Translations = {
     enterAmountToAdd: 'الرجاء إدخال المبلغ المراد إضافته',
     max: 'الحد الأقصى: 1000',
     selectDays: 'الرجاء اختيار الأيام',
-    day1: '1 يوم، فائدة مركبة 0.3%',
-    day15: '15 يوم، فائدة مركبة 0.6%',
-    day30: '30 يوم، فائدة مركبة 1.2%',
+    day1: (params: { day: number; percent: string }) => `${params.day} يوم، فائدة مركبة ${params.percent}%`,
+    day15: (params: { day: number; percent: string }) => `${params.day} يوم، فائدة مركبة ${params.percent}%`,
+    day30: (params: { day: number; percent: string }) => `${params.day} يوم، فائدة مركبة ${params.percent}%`,
     cancel: 'إلغاء',
     confirm: 'تأكيد',
     withdrawalAmount: 'مبلغ السحب',
@@ -87,8 +87,8 @@ export const ar: Translations = {
     validationWithdrawAmountRequired: 'الرجاء إدخال مبلغ السحب',
     validationWithdrawAddressRequired: 'الرجاء إدخال حساب السحب',
     validationWithdrawAmountInvalid: 'يجب أن يكون مبلغ السحب أكبر من 0',
-    validationWithdrawAddressInvalid: 'الرجاء إدخال عنوان BSC صالح (يبدأ بـ 0x، 42 حرفًا)',
-    validationWithdrawDaysRequired: 'يرجى الانتظار 15 يومًا على الأقل قبل التقدم بطلب السحب',
+    validationWithdrawAddressInvalid: 'الرجاء إدخال عنوان TRON صالح (يبدأ بـ T، 34 حرفًا)',
+    validationWithdrawDaysRequired: 'لا يمكن سحب مكافآت المنصة مباشرة، يجب عليك عمل stake لمدة 7 أيام قبل التقدم بطلب السحب',
     processing: 'جاري المعالجة...'
   }
 }
