@@ -109,25 +109,53 @@ export const whatsappApi = {
 
   // 检查登录状态
   async checkStatus(sessionID: string): Promise<LoginStatusResponse> {
-    const response = await api.get<any>('/whatsapp/status', { params: { session_id: sessionID } })
-    // Handle API response format: may be wrapped in { code, data, message } or direct response
-    const data = response.data
-    if (data && typeof data === 'object') {
-      // If response has 'data' field (wrapped response), use it
-      if (data.data && typeof data.data === 'object') {
-        return data.data as LoginStatusResponse
-      }
-      // If response has 'code' field (API format), check if successful
-      if ('code' in data) {
-        if (data.code === 0 && data.data) {
+    try {
+      const response = await api.get<any>('/whatsapp/status', { params: { session_id: sessionID } })
+      console.log('📡 Status check API response:', response)
+      
+      // Handle API response format: may be wrapped in { code, data, message } or direct response
+      const data = response.data
+      console.log('📡 Status check response data:', data)
+      
+      if (data && typeof data === 'object') {
+        // If response has 'data' field (wrapped response), use it
+        if (data.data && typeof data.data === 'object' && ('connected' in data.data || 'jid' in data.data)) {
+          console.log('✅ Found wrapped response with data:', data.data)
           return data.data as LoginStatusResponse
         }
-        throw new Error(data.message || 'Failed to check status')
+        // If response has 'code' field (API format), check if successful
+        if ('code' in data) {
+          if (data.code === 0 && data.data) {
+            console.log('✅ Found code:0 response with data:', data.data)
+            return data.data as LoginStatusResponse
+          }
+          // If code is not 0, it might be an error, but check if data exists
+          if (data.data && typeof data.data === 'object') {
+            console.log('⚠️ Code is not 0 but data exists:', data.data)
+            return data.data as LoginStatusResponse
+          }
+          throw new Error(data.message || 'Failed to check status')
+        }
+        // Check if it's already the LoginStatusResponse format
+        if ('connected' in data || 'jid' in data) {
+          console.log('✅ Found direct LoginStatusResponse:', data)
+          return data as LoginStatusResponse
+        }
+        // Check for success wrapper
+        if (data.success === true && data.data) {
+          console.log('✅ Found success wrapper:', data.data)
+          return data.data as LoginStatusResponse
+        }
       }
-      // Direct response
-      return data as LoginStatusResponse
+      
+      console.error('❌ Unable to parse status response:', data)
+      throw new Error('Invalid response format: ' + JSON.stringify(data))
+    } catch (error: any) {
+      console.error('❌ Status check API error:', error)
+      console.error('❌ Error response:', error?.response?.data)
+      console.error('❌ Error status:', error?.response?.status)
+      throw error
     }
-    throw new Error('Invalid response format')
   },
 
   // 断开连接

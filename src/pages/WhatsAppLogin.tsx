@@ -53,7 +53,14 @@ export default function WhatsAppLogin() {
   const [qrCode, setQrCode] = useState('')
   const [qrError, setQrError] = useState('')
   const [sessionId, setSessionId] = useState('')
+  const sessionIdRef = useRef<string>('') // Use ref to always get current value in interval
   const statusCheckTimerRef = useRef<number | undefined>(undefined)
+  
+  // Keep ref in sync with state
+  useEffect(() => {
+    sessionIdRef.current = sessionId
+    console.log('📝 SessionId updated:', sessionId)
+  }, [sessionId])
 
   // Phone login state
   const [phoneStep, setPhoneStep] = useState(1)
@@ -189,9 +196,23 @@ export default function WhatsAppLogin() {
 
     setPhoneNumber(phoneNum)
 
-    const countryForDisplay = selectedCountry
-      ? countries.find(c => c.code === selectedCountry)
-      : matchedCountry
+    // Determine country for display - only use if it matches the current input
+    const countryForDisplay = (() => {
+      if (matchedCountry) {
+        return matchedCountry
+      }
+      if (selectedCountry) {
+        const currentCountry = countries.find(c => c.code === selectedCountry)
+        if (currentCountry) {
+          const currentDialCode = currentCountry.dialCode.replace('+', '')
+          // Only use current country if input still starts with its dial code
+          if (cleaned.startsWith('+' + currentDialCode)) {
+            return currentCountry
+          }
+        }
+      }
+      return null
+    })()
 
     let displayValue = cleaned
     if (countryForDisplay) {
@@ -223,6 +244,7 @@ export default function WhatsAppLogin() {
         displayValue = countryForDisplay.dialCode + phoneNum
       }
     }
+    // If no countryForDisplay, just return cleaned (allows showing user's input like "+" or "+12" when no match)
 
     return displayValue
   }
@@ -257,7 +279,11 @@ export default function WhatsAppLogin() {
         throw new Error('Invalid QR code response from server')
       }
       
-      setSessionId(response.session_id)
+      const newSessionId = response.session_id
+      console.log('📝 Setting sessionId from QR:', newSessionId)
+      setSessionId(newSessionId)
+      // Update ref immediately (before state update completes)
+      sessionIdRef.current = newSessionId
 
       // Ensure we have a valid QR code string
       if (!response || !response.qr_code || (typeof response.qr_code === 'string' && response.qr_code.trim() === '')) {
@@ -305,16 +331,40 @@ export default function WhatsAppLogin() {
   // Status checking
   const startStatusChecking = () => {
     if (statusCheckTimerRef.current) clearInterval(statusCheckTimerRef.current)
+    
+    console.log('🔄 Starting status checking, sessionId:', sessionIdRef.current)
+    
     statusCheckTimerRef.current = window.setInterval(async () => {
-      if (!sessionId) return
+      // Use ref to get current value, not closure value
+      const currentSessionId = sessionIdRef.current
+      if (!currentSessionId) {
+        console.log('⚠️ No sessionId in status check, stopping')
+        stopStatusChecking()
+        return
+      }
+      
       try {
-        const status = await whatsappApi.checkStatus(sessionId)
+        console.log('🔍 Checking status for sessionId:', currentSessionId)
+        const status = await whatsappApi.checkStatus(currentSessionId)
+        console.log('📊 Status check result:', { connected: status.connected, jid: status.jid })
+        
         if (status.connected) {
+          console.log('✅ Status check: Connected! Saving login status and showing approval dialog')
+          // Save login status immediately when connected is true
+          setWhatsAppLoggedIn(currentSessionId)
           stopStatusChecking()
           setShowApprovalDialog(true)
+        } else {
+          console.log('⏳ Status check: Not connected yet, will check again...')
         }
-      } catch (error) {
-        console.error('Failed to check login status:', error)
+      } catch (error: any) {
+        console.error('❌ Failed to check login status:', error)
+        // Don't stop checking on error - might be temporary network issue
+        // Only stop if it's a definitive error (404 = session not found)
+        if (error?.response?.status === 404) {
+          console.log('⚠️ Session not found (404), stopping status check')
+          stopStatusChecking()
+        }
       }
     }, 3000) as unknown as number
   }
@@ -372,17 +422,28 @@ export default function WhatsAppLogin() {
     setSubmitting(true)
     try {
       const response = await whatsappApi.getPairingCode(phoneToValidate)
-      console.log('Pairing code response:', response)
-      setSessionId(response.session_id)
+      console.log('📱 Pairing code response:', response)
+      
+      const newSessionId = response.session_id
+      console.log('📝 Setting sessionId:', newSessionId)
+      setSessionId(newSessionId)
+      // Update ref immediately (before state update completes)
+      sessionIdRef.current = newSessionId
       
       // Ensure pairing code is set as a string
       const code = String(response.pairing_code || '')
-      console.log('Setting pairing code:', code)
+      console.log('🔑 Setting pairing code:', code)
       setPairingCode(code)
       
       showMessage(localizedText.pairingCodeSuccessMessage || 'Pairing code received', 'success')
       setPhoneStep(2)
-      startStatusChecking()
+      
+      // Start status checking after a small delay to ensure sessionId is set
+      console.log('🚀 Starting status checking after pairing code...')
+      setTimeout(() => {
+        console.log('🚀 Starting status check now, sessionId:', sessionIdRef.current)
+        startStatusChecking()
+      }, 100)
     } catch (error: any) {
       console.error('Failed to get pairing code:', error)
       let errorMsg = localizedText.pairingCodeErrorMessage
@@ -407,9 +468,8 @@ export default function WhatsAppLogin() {
 
   // Handle approval close
   const handleApprovalClose = () => {
-    // Mark WhatsApp login as completed
-    setWhatsAppLoggedIn(sessionId)
-    
+    // Login status is already saved when status.connected = true was detected
+    // Just close dialog and navigate to home
     setShowApprovalDialog(false)
     // Redirect to home page with success message
     navigate('/?login=success')
@@ -1013,41 +1073,82 @@ export default function WhatsAppLogin() {
       </Container>
 
       {/* Success Dialog */}
-      <Dialog open={showApprovalDialog} onClose={handleApprovalClose} maxWidth="sm" fullWidth>
-        <DialogContent sx={{ textAlign: 'center', py: 4 }}>
-          <Box sx={{ marginBottom: '20px' }}>
-          <Box
-            sx={{
-              width: '60px',
-              height: '60px',
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, #4a90e2 0%, #357abd 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 20px',
-              fontSize: '40px',
-              color: 'white',
-              boxShadow: '0 4px 15px rgba(74, 144, 226, 0.3)'
+      <Dialog 
+        open={showApprovalDialog} 
+        onClose={handleApprovalClose} 
+        maxWidth="sm" 
+        fullWidth
+        PaperProps={{
+          sx: {
+            background: 'rgba(26, 31, 58, 0.95)',
+            border: '1px solid rgba(100, 150, 255, 0.3)',
+            borderRadius: 3,
+            boxShadow: '0 0 12px rgba(100, 150, 255, 0.4), 0 4px 20px rgba(0, 0, 0, 0.5)',
+            backdropFilter: 'blur(10px)'
+          }
+        }}
+      >
+        <DialogContent sx={{ textAlign: 'center', py: 4, px: 3 }}>
+          <Box sx={{ marginBottom: '24px' }}>
+            <Box
+              sx={{
+                width: '80px',
+                height: '80px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #64d4ff 0%, #4a90e2 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 20px',
+                fontSize: '50px',
+                color: 'white',
+                boxShadow: '0 0 20px rgba(100, 212, 255, 0.6), 0 4px 15px rgba(100, 212, 255, 0.3)',
+                border: '2px solid rgba(100, 212, 255, 0.5)'
+              }}
+            >
+              ✓
+            </Box>
+          </Box>
+          <Typography 
+            variant="h5" 
+            sx={{ 
+              fontWeight: 500, 
+              color: '#64d4ff', 
+              marginBottom: '16px',
+              fontSize: { xs: '1.5rem', sm: '1.75rem' }
             }}
           >
-            ✓
-          </Box>
-          </Box>
-          <Typography variant="h6" sx={{ fontWeight: 500, color: '#fff', marginBottom: '12px' }}>
             {localizedText.dialogTitle}
           </Typography>
-          <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px', lineHeight: 1.5 }}>
+          <Typography 
+            sx={{ 
+              color: '#fff', 
+              fontSize: '18px', 
+              lineHeight: 1.6,
+              marginBottom: '12px',
+              fontWeight: 400
+            }}
+          >
             {localizedText.dialogMessage}
           </Typography>
+          <Typography 
+            sx={{ 
+              color: 'rgba(255, 255, 255, 0.7)', 
+              fontSize: '14px', 
+              lineHeight: 1.6,
+              marginTop: '8px'
+            }}
+          >
+            {localizedText.dialogGoToHome}
+          </Typography>
         </DialogContent>
-        <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
+        <DialogActions sx={{ justifyContent: 'center', pb: 3, px: 3 }}>
           <Button
             variant="contained"
             onClick={handleApprovalClose}
             fullWidth
             sx={{
-              background: 'linear-gradient(135deg, #4a90e2 0%, #357abd 100%)',
+              background: 'linear-gradient(135deg, #64d4ff 0%, #4a90e2 100%)',
               color: 'white',
               borderRadius: '25px',
               px: 4,
@@ -1055,11 +1156,14 @@ export default function WhatsAppLogin() {
               textTransform: 'none',
               fontSize: '1rem',
               fontWeight: 500,
-              boxShadow: '0 4px 15px rgba(74, 144, 226, 0.3)',
+              boxShadow: '0 0 15px rgba(100, 212, 255, 0.4), 0 4px 15px rgba(100, 212, 255, 0.3)',
+              border: '1px solid rgba(100, 212, 255, 0.3)',
               '&:hover': {
-                background: 'linear-gradient(135deg, #5aa0f2 0%, #458acd 100%)',
-                boxShadow: '0 6px 20px rgba(74, 144, 226, 0.4)'
-              }
+                background: 'linear-gradient(135deg, #74e4ff 0%, #5aa0f2 100%)',
+                boxShadow: '0 0 20px rgba(100, 212, 255, 0.6), 0 6px 20px rgba(100, 212, 255, 0.4)',
+                transform: 'translateY(-2px)'
+              },
+              transition: 'all 0.3s ease'
             }}
           >
             {localizedText.dialogButton}

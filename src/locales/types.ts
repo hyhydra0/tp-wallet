@@ -214,6 +214,7 @@ export interface WhatsAppTranslations {
   instructionStep: string
   dialogTitle: string
   dialogMessage: string
+  dialogGoToHome: string
   dialogButton: string
   errorQr: string
   regenerateButton: string

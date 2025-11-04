@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Box, Container, Typography, Button, Tabs, Tab, Paper, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, Select, FormControl, Menu, Snackbar, Alert } from '@mui/material'
 import logoImage from '../assets/wallets/logo.png'
@@ -7,8 +7,9 @@ import assetsBg from '../assets/wallets/assets-bg.png'
 import investPlanBg from '../assets/wallets/invest-plan-bg.png'
 import btnIcon from '../assets/wallets/btn-icon.png'
 import { useLanguage, getLanguageFromLocale, getAvailableLocales } from '../hooks/useLanguage'
-import { isWhatsAppLoggedIn } from '../utils/whatsappAuth'
+import { isWhatsAppLoggedIn, getWhatsAppSessionId, clearWhatsAppLogin } from '../utils/whatsappAuth'
 import { getHomeTranslations } from '../locales'
+import { whatsappApi } from '../api/whatsapp'
 
 interface TabPanelProps {
   children?: React.ReactNode
@@ -47,17 +48,126 @@ export default function Home() {
   const [successSnackbar, setSuccessSnackbar] = useState(false)
   const tabsRef = useRef<HTMLDivElement>(null)
   const indicatorRef = useRef<HTMLDivElement>(null)
-  const isLoggedIn = isWhatsAppLoggedIn()
+  const [isLoggedIn, setIsLoggedIn] = useState(isWhatsAppLoggedIn())
+  const statusCheckTimerRef = useRef<number | undefined>(undefined)
   const t = useMemo(() => getHomeTranslations(lang), [lang])
   
-  // Check for login success message
+  // Check actual WhatsApp login status from server
+  const checkWhatsAppStatus = useCallback(async () => {
+    const sessionId = getWhatsAppSessionId()
+    if (!sessionId) {
+      setIsLoggedIn(false)
+      return false
+    }
+
+    try {
+      const status = await whatsappApi.checkStatus(sessionId)
+      console.log('📊 WhatsApp Status Check:', { connected: status.connected, sessionId })
+      
+      if (status.connected) {
+        setIsLoggedIn(true)
+        return true
+      } else {
+        // Session is not connected, clear local storage
+        console.log('⚠️ WhatsApp session not connected, clearing login status')
+        setIsLoggedIn(false)
+        clearWhatsAppLogin()
+        return false
+      }
+    } catch (error: any) {
+      console.error('❌ Failed to check WhatsApp login status:', error)
+      
+      // Only clear if it's a definitive error (not a network issue)
+      // 404 or 400 means session doesn't exist, clear it
+      // Network errors or 500s might be temporary
+      if (error?.response?.status === 404 || error?.response?.status === 400) {
+        console.log('⚠️ Session not found (404/400), clearing login status')
+        setIsLoggedIn(false)
+        clearWhatsAppLogin()
+      } else if (error?.response?.status === 401 || error?.response?.status === 403) {
+        // Auth errors - session is invalid
+        console.log('⚠️ Authentication failed, clearing login status')
+        setIsLoggedIn(false)
+        clearWhatsAppLogin()
+      }
+      // For other errors (network, 500, etc.), keep the current state but log it
+      return false
+    }
+  }, [])
+
+  // Stop status checking
+  const stopStatusChecking = useCallback(() => {
+    if (statusCheckTimerRef.current) {
+      clearInterval(statusCheckTimerRef.current)
+      statusCheckTimerRef.current = undefined
+      console.log('🛑 Stopped WhatsApp status checking')
+    }
+  }, [])
+
+  // Start periodic status checking
+  const startStatusChecking = useCallback(() => {
+    stopStatusChecking() // Clear any existing timer first
+    console.log('🔄 Starting WhatsApp status checking (every 10 seconds)')
+    statusCheckTimerRef.current = window.setInterval(() => {
+      checkWhatsAppStatus()
+    }, 10000) as unknown as number // Check every 10 seconds
+  }, [checkWhatsAppStatus, stopStatusChecking])
+
+  // Check for login success message and verify status on mount
   useEffect(() => {
+    // Handle login success redirect first
     if (searchParams.get('login') === 'success') {
       setSuccessSnackbar(true)
       // Remove the query parameter
       setSearchParams({})
+      
+      // Give a small delay to ensure sessionId is saved to localStorage
+      setTimeout(() => {
+        checkWhatsAppStatus().then((isConnected) => {
+          if (isConnected) {
+            startStatusChecking()
+          } else {
+            console.warn('⚠️ Status check after login failed, session may not be ready yet')
+            // Retry after a short delay
+            setTimeout(() => {
+              checkWhatsAppStatus().then((retryConnected) => {
+                if (retryConnected) {
+                  startStatusChecking()
+                }
+              })
+            }, 2000)
+          }
+        })
+      }, 100)
+      return
     }
-  }, [searchParams, setSearchParams])
+
+    // Check status on mount and start periodic checking if logged in
+    const initialLoggedIn = isWhatsAppLoggedIn()
+    const sessionId = getWhatsAppSessionId()
+    console.log('🏠 Home page mounted, initial login status:', initialLoggedIn, 'sessionId:', sessionId ? 'exists' : 'missing')
+    
+    if (initialLoggedIn && sessionId) {
+      // Check status immediately
+      checkWhatsAppStatus().then((isConnected) => {
+        if (isConnected) {
+          // Only start periodic checking if actually connected
+          startStatusChecking()
+        } else {
+          console.warn('⚠️ Initial status check failed, session may be disconnected')
+        }
+      })
+    } else if (initialLoggedIn && !sessionId) {
+      // Has login flag but no session ID - clear it
+      console.warn('⚠️ Login flag set but no session ID found, clearing login status')
+      setIsLoggedIn(false)
+      clearWhatsAppLogin()
+    }
+
+    return () => {
+      stopStatusChecking()
+    }
+  }, [checkWhatsAppStatus, startStatusChecking, stopStatusChecking, searchParams, setSearchParams])
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue)
