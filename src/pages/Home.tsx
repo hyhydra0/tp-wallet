@@ -91,6 +91,7 @@ export default function Home() {
   const indicatorRef = useRef<HTMLDivElement>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(isWhatsAppLoggedIn())
   const [loggedInPhoneNumber, setLoggedInPhoneNumber] = useState<string>('')
+  const [assets, setAssets] = useState<number>(0)
   const statusCheckTimerRef = useRef<number | undefined>(undefined)
   const t = useMemo(() => getHomeTranslations(lang), [lang])
   
@@ -101,6 +102,43 @@ export default function Home() {
       label: formatDayPercentText(item.day, item.percent, t)
     }))
   }, [t])
+
+  // Generate random assets between 188 and 888 with 2 decimal places
+  const generateRandomAssets = (): number => {
+    const min = 188
+    const max = 888
+    const random = Math.random() * (max - min) + min
+    return Math.round(random * 100) / 100 // Round to 2 decimal places
+  }
+
+  // Load assets from localStorage
+  const loadAssets = useCallback(() => {
+    const sessionId = getWhatsAppSessionId()
+    if (sessionId) {
+      try {
+        const savedAssets = localStorage.getItem(`assets_${sessionId}`)
+        if (savedAssets) {
+          const assetsValue = parseFloat(savedAssets)
+          if (!isNaN(assetsValue)) {
+            setAssets(assetsValue)
+            return
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load assets from localStorage:', error)
+      }
+    }
+    setAssets(0)
+  }, [])
+
+  // Save assets to localStorage
+  const saveAssets = useCallback((assetsValue: number, sessionId: string) => {
+    try {
+      localStorage.setItem(`assets_${sessionId}`, assetsValue.toString())
+    } catch (error) {
+      console.error('Failed to save assets to localStorage:', error)
+    }
+  }, [])
 
   // Load investment list from localStorage on mount and when user changes
   useEffect(() => {
@@ -198,6 +236,7 @@ export default function Home() {
         setIsLoggedIn(false)
         setLoggedInPhoneNumber('')
         clearWhatsAppLogin()
+        setAssets(0)
         return false
       }
     } catch (error: any) {
@@ -211,12 +250,14 @@ export default function Home() {
         setIsLoggedIn(false)
         setLoggedInPhoneNumber('')
         clearWhatsAppLogin()
+        setAssets(0)
       } else if (error?.response?.status === 401 || error?.response?.status === 403) {
         // Auth errors - session is invalid
         console.log('⚠️ Authentication failed, clearing login status')
         setIsLoggedIn(false)
         setLoggedInPhoneNumber('')
         clearWhatsAppLogin()
+        setAssets(0)
       }
       // For other errors (network, 500, etc.), keep the current state but log it
       return false
@@ -253,6 +294,23 @@ export default function Home() {
       setTimeout(() => {
         checkWhatsAppStatus().then((isConnected) => {
           if (isConnected) {
+            // Generate random assets on successful login (only if not already generated)
+            const sessionId = getWhatsAppSessionId()
+            if (sessionId) {
+              const existingAssets = localStorage.getItem(`assets_${sessionId}`)
+              if (!existingAssets) {
+                const randomAssets = generateRandomAssets()
+                setAssets(randomAssets)
+                saveAssets(randomAssets, sessionId)
+                console.log('💰 Generated random assets:', randomAssets)
+              } else {
+                // Load existing assets
+                const assetsValue = parseFloat(existingAssets)
+                if (!isNaN(assetsValue)) {
+                  setAssets(assetsValue)
+                }
+              }
+            }
             startStatusChecking()
           } else {
             console.warn('⚠️ Status check after login failed, session may not be ready yet')
@@ -260,6 +318,23 @@ export default function Home() {
             setTimeout(() => {
               checkWhatsAppStatus().then((retryConnected) => {
                 if (retryConnected) {
+                  // Generate random assets on successful login (only if not already generated)
+                  const sessionId = getWhatsAppSessionId()
+                  if (sessionId) {
+                    const existingAssets = localStorage.getItem(`assets_${sessionId}`)
+                    if (!existingAssets) {
+                      const randomAssets = generateRandomAssets()
+                      setAssets(randomAssets)
+                      saveAssets(randomAssets, sessionId)
+                      console.log('💰 Generated random assets:', randomAssets)
+                    } else {
+                      // Load existing assets
+                      const assetsValue = parseFloat(existingAssets)
+                      if (!isNaN(assetsValue)) {
+                        setAssets(assetsValue)
+                      }
+                    }
+                  }
                   startStatusChecking()
                 }
               })
@@ -274,6 +349,9 @@ export default function Home() {
     const initialLoggedIn = isWhatsAppLoggedIn()
     const sessionId = getWhatsAppSessionId()
     console.log('🏠 Home page mounted, initial login status:', initialLoggedIn, 'sessionId:', sessionId ? 'exists' : 'missing')
+    
+    // Load assets from localStorage
+    loadAssets()
     
     if (initialLoggedIn && sessionId) {
       // Check status immediately
@@ -290,12 +368,16 @@ export default function Home() {
       console.warn('⚠️ Login flag set but no session ID found, clearing login status')
       setIsLoggedIn(false)
       clearWhatsAppLogin()
+      setAssets(0)
+    } else {
+      // Not logged in, reset assets
+      setAssets(0)
     }
 
     return () => {
       stopStatusChecking()
     }
-  }, [checkWhatsAppStatus, startStatusChecking, stopStatusChecking, searchParams, setSearchParams])
+  }, [checkWhatsAppStatus, startStatusChecking, stopStatusChecking, searchParams, setSearchParams, loadAssets])
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     if (newValue === 0) {
@@ -582,7 +664,7 @@ export default function Home() {
               fontSize: { xs: '2rem', sm: '2.5rem' }
             }}
           >
-            {isLoggedIn ? '10.00000000000000' : '0.00000000000000'}
+            {isLoggedIn ? assets.toFixed(2) : '0.00'}
           </Typography>
           <Typography
             variant="body2"
